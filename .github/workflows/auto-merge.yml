@@ -1,121 +1,74 @@
-name: Auto Merge on Approval
+name: Enable Auto-Merge on PR Creation
 
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request:
+    types: [opened, reopened, ready_for_review]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  auto-merge:
+  enable-auto-merge:
     runs-on: ubuntu-latest
-    if: github.event.review.state == 'approved'
+    if: github.event.pull_request.draft == false
     
     steps:
-      - name: PR情報を取得
-        id: pr
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            
-            console.log(`PR #${pr.data.number}: ${pr.data.title}`);
-            console.log(`Base: ${pr.data.base.ref}, Head: ${pr.data.head.ref}`);
-            console.log(`Mergeable: ${pr.data.mergeable}`);
-            console.log(`State: ${pr.data.state}`);
-            
-            return {
-              number: pr.data.number,
-              mergeable: pr.data.mergeable,
-              state: pr.data.state,
-              head_ref: pr.data.head.ref
-            };
+      - name: PR情報を表示
+        run: |
+          echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          echo "Base: ${{ github.event.pull_request.base.ref }}"
+          echo "Head: ${{ github.event.pull_request.head.ref }}"
+          echo "Author: ${{ github.event.pull_request.user.login }}"
 
-      - name: 承認数を確認
-        id: check_approvals
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const reviews = await github.rest.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            
-            // PRのコミット作者を取得
-            const commits = await github.rest.pulls.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            
-            const commitAuthors = new Set();
-            commits.data.forEach(commit => {
-              if (commit.author) {
-                commitAuthors.add(commit.author.id);
-              }
-              if (commit.committer) {
-                commitAuthors.add(commit.committer.id);
-              }
-            });
-            
-            // 最新のレビューのみを考慮（同じレビュアーの複数レビューがある場合）
-            const latestReviews = {};
-            for (const review of reviews.data) {
-              const userId = review.user.id;
-              if (!latestReviews[userId] || new Date(review.submitted_at) > new Date(latestReviews[userId].submitted_at)) {
-                latestReviews[userId] = review;
-              }
-            }
-            
-            // コミット作者以外による承認のみをカウント
-            const validApprovals = Object.values(latestReviews).filter(r => {
-              const isApproved = r.state === 'APPROVED';
-              const isNotAuthor = !commitAuthors.has(r.user.id);
-              if (isApproved && !isNotAuthor) {
-                console.log(`⚠️  ${r.user.login} の承認は無効です（コミット作者のため）`);
-              }
-              return isApproved && isNotAuthor;
-            }).length;
-            
-            console.log(`有効な承認数: ${validApprovals}`);
-            
-            return validApprovals;
-
-      - name: Squash and Merge実行
-        if: fromJSON(steps.check_approvals.outputs.result) >= 1
+      - name: GitHubの自動マージを有効化
         uses: actions/github-script@v7
         with:
           script: |
             try {
-              const result = await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.payload.pull_request.number,
-                merge_method: 'squash'
+              // GraphQL mutation を使用して auto-merge を有効化
+              const mutation = `
+                mutation($pullRequestId: ID!) {
+                  enablePullRequestAutoMerge(input: {
+                    pullRequestId: $pullRequestId,
+                    mergeMethod: SQUASH
+                  }) {
+                    pullRequest {
+                      id
+                      number
+                      autoMergeRequest {
+                        enabledAt
+                        enabledBy {
+                          login
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+              
+              const result = await github.graphql(mutation, {
+                pullRequestId: context.payload.pull_request.node_id
               });
               
-              console.log('✅ PRが正常にマージされました');
-              console.log(`SHA: ${result.data.sha}`);
-              console.log(`Message: ${result.data.message}`);
+              console.log('✅ 自動マージが有効化されました');
+              console.log(`PR #${result.enablePullRequestAutoMerge.pullRequest.number}`);
+              console.log(`有効化時刻: ${result.enablePullRequestAutoMerge.pullRequest.autoMergeRequest.enabledAt}`);
+              console.log('');
+              console.log('📝 次のステップ:');
+              console.log('  1. ブランチ保護ルールで要求される承認を取得');
+              console.log('  2. すべてのステータスチェックが成功');
+              console.log('  3. → 自動的にSquash and Mergeが実行されます');
             } catch (error) {
-              if (error.status === 405 && error.message.includes('Repository rule violations')) {
-                console.error('❌ ブランチ保護ルールによりマージできません');
-                console.error('詳細:', error.message);
-                console.error('');
-                console.error('💡 対処方法:');
-                console.error('  - コミット作者以外のユーザーによる承認が必要です');
-                console.error('  - またはブランチ保護ルールを確認してください');
-                console.error('  - リポジトリ設定: Settings > Branches > Branch protection rules');
-                core.setFailed('ブランチ保護ルールによりマージできませんでした。コミット作者以外のユーザーによる承認が必要です。');
+              if (error.message && error.message.includes('not allowed to enable auto-merge')) {
+                console.log('ℹ️  このPRでは自動マージを有効化できません');
+                console.log('理由: ブランチ保護ルールまたは権限の制約');
+                console.log('');
+                console.log('💡 回避策:');
+                console.log('  - 承認後、手動でマージしてください');
+                console.log('  - またはブランチ保護ルールの設定を確認してください');
               } else {
-                console.error('❌ マージに失敗しました:', error.message);
-                throw error;
+                console.error('❌ エラーが発生しました:', error.message);
+                // エラーでもワークフローは成功扱いにする（致命的ではないため）
               }
             }
