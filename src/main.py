@@ -3,14 +3,18 @@ import json
 import os
 from sentence_transformers import SentenceTransformer, util
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../config.json')
 EMBED_PATH = os.path.join(os.path.dirname(__file__), '../data/embeddings.json')
 
-with open(CONFIG_PATH, 'r') as f:
-	config = json.load(f)
+# 環境変数から機密情報を読み取る
+TOKEN = os.environ.get('DISCORD_TOKEN')
+GUILD_ID_STR = os.environ.get('TARGET_GUILD_ID')
 
-TOKEN = config['DISCORD_TOKEN']
-GUILD_ID = int(config['TARGET_GUILD_ID'])
+if not TOKEN:
+	raise ValueError('環境変数 DISCORD_TOKEN が設定されていません')
+if not GUILD_ID_STR:
+	raise ValueError('環境変数 TARGET_GUILD_ID が設定されていません')
+
+GUILD_ID = int(GUILD_ID_STR)
 
 intents = discord.Intents.default()
 intents.message_content = True
