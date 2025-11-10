@@ -48,6 +48,23 @@ jobs:
               pull_number: context.payload.pull_request.number
             });
             
+            // PRのコミット作者を取得
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            
+            const commitAuthors = new Set();
+            commits.data.forEach(commit => {
+              if (commit.author) {
+                commitAuthors.add(commit.author.id);
+              }
+              if (commit.committer) {
+                commitAuthors.add(commit.committer.id);
+              }
+            });
+            
             // 最新のレビューのみを考慮（同じレビュアーの複数レビューがある場合）
             const latestReviews = {};
             for (const review of reviews.data) {
@@ -57,10 +74,19 @@ jobs:
               }
             }
             
-            const approvals = Object.values(latestReviews).filter(r => r.state === 'APPROVED').length;
-            console.log(`承認数: ${approvals}`);
+            // コミット作者以外による承認のみをカウント
+            const validApprovals = Object.values(latestReviews).filter(r => {
+              const isApproved = r.state === 'APPROVED';
+              const isNotAuthor = !commitAuthors.has(r.user.id);
+              if (isApproved && !isNotAuthor) {
+                console.log(`⚠️  ${r.user.login} の承認は無効です（コミット作者のため）`);
+              }
+              return isApproved && isNotAuthor;
+            }).length;
             
-            return approvals;
+            console.log(`有効な承認数: ${validApprovals}`);
+            
+            return validApprovals;
 
       - name: Squash and Merge実行
         if: fromJSON(steps.check_approvals.outputs.result) >= 1
@@ -79,6 +105,17 @@ jobs:
               console.log(`SHA: ${result.data.sha}`);
               console.log(`Message: ${result.data.message}`);
             } catch (error) {
-              console.error('❌ マージに失敗しました:', error.message);
-              throw error;
+              if (error.status === 405 && error.message.includes('Repository rule violations')) {
+                console.error('❌ ブランチ保護ルールによりマージできません');
+                console.error('詳細:', error.message);
+                console.error('');
+                console.error('💡 対処方法:');
+                console.error('  - コミット作者以外のユーザーによる承認が必要です');
+                console.error('  - またはブランチ保護ルールを確認してください');
+                console.error('  - リポジトリ設定: Settings > Branches > Branch protection rules');
+                core.setFailed('ブランチ保護ルールによりマージできませんでした。コミット作者以外のユーザーによる承認が必要です。');
+              } else {
+                console.error('❌ マージに失敗しました:', error.message);
+                throw error;
+              }
             }
