@@ -12,7 +12,33 @@
 ## セットアップ
 
 1. `requirements.txt`で依存パッケージをインストール
-2. `config.json`でBotトークン等を設定
+
+```bash
+pip install -r requirements.txt
+```
+
+2. 環境変数を設定
+
+以下の環境変数を設定してください：
+
+- `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+- `TARGET_GUILD_ID`: 取得対象のサーバーID
+
+### ローカル環境での実行
+
+```bash
+export DISCORD_TOKEN="your_bot_token_here"
+export TARGET_GUILD_ID="your_guild_id_here"
+python src/main.py
+```
+
+### GitHub Secretsの設定（本番環境）
+
+1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
+2. 以下のSecretを追加：
+   - `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+   - `TARGET_GUILD_ID`: 取得対象のサーバーID
+
 3. `main.py`を実行
 
 ## ディレクトリ構成
