@@ -7,6 +7,10 @@
 - `general.instructions.md` - プロジェクト全体に適用される全般的な指示（言語設定など）
 - `markdown.instructions.md` - Markdown ファイルの生成・編集時のスタイル指示
 
+## 関連ファイル
+
+- `../.github/pull_request_template.md` - PRレビュー時にGitHub Copilotが日本語でレビューするための指示
+
 ## 用途別の分類
 
 指示ファイルは用途別に分けることで、以下のメリットがあります：
