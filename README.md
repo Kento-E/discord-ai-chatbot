@@ -43,7 +43,12 @@ python src/main.py
 
 #### Secretsの疎通テスト
 
-Secretsを更新した際は、GitHub Actionsで疎通テストを実行できます：
+Secretsの有効性は以下のタイミングで自動的にテストされます：
+
+- **mainブランチへのPR起票時**：PR作成時、更新時に自動実行
+- **mainブランチへのpush時**：ワークフローファイル更新時に自動実行
+
+手動でテストを実行する場合：
 
 1. リポジトリの「Actions」タブを開く
 2. 「Discord Secrets疎通テスト」ワークフローを選択
@@ -54,6 +59,9 @@ Secretsを更新した際は、GitHub Actionsで疎通テストを実行でき�
 - DISCORD_TOKENの有効性
 - Discord APIへの接続
 - TARGET_GUILD_IDで指定されたサーバーへのアクセス
+
+**注意**：このテストは読み取り専用の操作のみを実行し、
+Discordサーバーへのメッセージ送信や通知は行いません。
 
 ## ディレクトリ構成
 
