@@ -41,6 +41,20 @@ python src/main.py
 
 3. `main.py`を実行
 
+#### Secretsの疎通テスト
+
+Secretsを更新した際は、GitHub Actionsで疎通テストを実行できます：
+
+1. リポジトリの「Actions」タブを開く
+2. 「Discord Secrets疎通テスト」ワークフローを選択
+3. 「Run workflow」ボタンをクリックして手動実行
+
+テストでは以下を確認します：
+
+- DISCORD_TOKENの有効性
+- Discord APIへの接続
+- TARGET_GUILD_IDで指定されたサーバーへのアクセス
+
 ## ディレクトリ構成
 
 - src/: メインロジック
