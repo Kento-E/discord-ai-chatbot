@@ -7,6 +7,8 @@ on:
         description: '実行理由（任意）'
         required: false
         default: '知識データの更新'
+  schedule:
+    - cron: '0 0 */80 * *'  # 80日ごとに自動実行（アーティファクト保持期間90日に対する余裕を持たせた設定）
 
 permissions:
   contents: read

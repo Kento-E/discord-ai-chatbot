@@ -68,8 +68,13 @@ jobs:
       - name: 知識データの確認
         run: |
           if [ ! -f data/embeddings.json ]; then
-            echo "⚠️ 警告: 知識データが存在しません"
-            echo "知識データを生成するには、'知識データの生成と保存' ワークフローを実行してください"
+            echo "❌ エラー: 知識データが存在しません"
+            echo ""
+            echo "知識データを生成するには、以下のワークフローを実行してください:"
+            echo "  Actions → '知識データの生成と保存' → Run workflow"
+            echo ""
+            echo "詳細: .github/workflows/ENCRYPTION_KEY_SETUP.md を参照"
+            exit 1
           else
             echo "✅ 知識データが利用可能です"
           fi
@@ -107,10 +112,12 @@ jobs:
             echo "詳細なエラー内容は上記のログを確認してください。" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### 確認事項" >> $GITHUB_STEP_SUMMARY
-            echo "1. **DISCORD_TOKEN**: 正しいBot トークンが設定されているか" >> $GITHUB_STEP_SUMMARY
-            echo "2. **TARGET_GUILD_ID**: 正しいサーバーIDが設定されているか" >> $GITHUB_STEP_SUMMARY
-            echo "3. **Bot権限**: Botがサーバーに参加しているか" >> $GITHUB_STEP_SUMMARY
-            echo "4. **Intent設定**: Discord Developer Portalで必要なIntentsが有効化されているか" >> $GITHUB_STEP_SUMMARY
+            echo "1. **知識データ**: '知識データの生成と保存' ワークフローを実行済みか" >> $GITHUB_STEP_SUMMARY
+            echo "2. **DISCORD_TOKEN**: 正しいBot トークンが設定されているか" >> $GITHUB_STEP_SUMMARY
+            echo "3. **TARGET_GUILD_ID**: 正しいサーバーIDが設定されているか" >> $GITHUB_STEP_SUMMARY
+            echo "4. **ENCRYPTION_KEY**: 暗号鍵が正しく設定されているか" >> $GITHUB_STEP_SUMMARY
+            echo "5. **Bot権限**: Botがサーバーに参加しているか" >> $GITHUB_STEP_SUMMARY
+            echo "6. **Intent設定**: Discord Developer Portalで必要なIntentsが有効化されているか" >> $GITHUB_STEP_SUMMARY
             echo "   - MESSAGE CONTENT INTENT" >> $GITHUB_STEP_SUMMARY
             echo "   - SERVER MEMBERS INTENT" >> $GITHUB_STEP_SUMMARY
             echo "   - GUILDS INTENT" >> $GITHUB_STEP_SUMMARY
