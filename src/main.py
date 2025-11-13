@@ -58,7 +58,17 @@ async def on_message(message):
 			reply = '過去の類似メッセージ:\n' + '\n'.join(['- ' + r for r in results])
 			await message.channel.send(reply)
 		else:
-			await message.channel.send('知識データが未生成です。まずメッセージ取得・整形を行ってください。')
+			help_msg = (
+				'知識データが未生成です。まずメッセージ取得・整形を行ってください。\n'
+				'\n'
+				'**手順:**\n'
+				'1. `python src/fetch_messages.py` でメッセージ取得\n'
+				'2. `python src/prepare_dataset.py` で埋め込みデータ生成\n'
+				'3. Botを再起動\n'
+				'\n'
+				'詳細は docs/USAGE.md またはREADMEをご覧ください。'
+			)
+			await message.channel.send(help_msg)
 
 if __name__ == '__main__':
 	client.run(TOKEN)
