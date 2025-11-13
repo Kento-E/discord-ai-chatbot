@@ -33,17 +33,8 @@
 ### ステップ1: 環境変数の設定
 
 ```bash
-# Linux/macOSの場合
 export DISCORD_TOKEN="your_bot_token_here"
 export TARGET_GUILD_ID="your_guild_id_here"
-
-# Windowsの場合（コマンドプロンプト）
-set DISCORD_TOKEN=your_bot_token_here
-set TARGET_GUILD_ID=your_guild_id_here
-
-# Windowsの場合（PowerShell）
-$env:DISCORD_TOKEN="your_bot_token_here"
-$env:TARGET_GUILD_ID="your_guild_id_here"
 ```
 
 ### ステップ2: 依存パッケージのインストール
