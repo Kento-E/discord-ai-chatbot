@@ -1,0 +1,93 @@
+name: Discord Botの実行
+
+on:
+  workflow_dispatch:  # 手動実行を許可
+    inputs:
+      reason:
+        description: 'Botを起動する理由（任意）'
+        required: false
+        default: '手動起動'
+      timeout_minutes:
+        description: '実行時間の上限（分）。最大360分（6時間）'
+        required: false
+        default: '60'
+        type: choice
+        options:
+          - '30'
+          - '60'
+          - '120'
+          - '180'
+          - '360'
+
+permissions:
+  contents: read
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJSON(github.event.inputs.timeout_minutes || '60') }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 依存パッケージをインストール
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Discord Botを起動
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
+        run: |
+          echo "🤖 Discord Botを起動します"
+          echo "起動理由: ${{ github.event.inputs.reason || '手動起動' }}"
+          echo "実行時間上限: ${{ github.event.inputs.timeout_minutes || '60' }}分"
+          echo ""
+          echo "⚠️ 注意: GitHub Actionsの制限により、最大6時間（360分）まで実行可能です"
+          echo "⚠️ タイムアウトに達すると自動的に停止します"
+          echo ""
+          echo "🔄 Botを起動しています..."
+          python src/main.py
+
+      - name: 実行結果をサマリーに出力
+        if: always()
+        run: |
+          if [ '${{ job.status }}' == 'success' ]; then
+            echo "## ✅ Discord Bot: 正常終了" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Botは正常に終了しました。" >> $GITHUB_STEP_SUMMARY
+          elif [ '${{ job.status }}' == 'cancelled' ]; then
+            echo "## ⏹️ Discord Bot: キャンセル" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Botの実行がキャンセルされました。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Discord Bot: エラー終了" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Botの実行中にエラーが発生しました。" >> $GITHUB_STEP_SUMMARY
+            echo "詳細なエラー内容は上記のログを確認してください。" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 確認事項" >> $GITHUB_STEP_SUMMARY
+            echo "1. **DISCORD_TOKEN**: 正しいBot トークンが設定されているか" >> $GITHUB_STEP_SUMMARY
+            echo "2. **TARGET_GUILD_ID**: 正しいサーバーIDが設定されているか" >> $GITHUB_STEP_SUMMARY
+            echo "3. **Bot権限**: Botがサーバーに参加しているか" >> $GITHUB_STEP_SUMMARY
+            echo "4. **Intent設定**: Discord Developer Portalで必要なIntentsが有効化されているか" >> $GITHUB_STEP_SUMMARY
+            echo "   - MESSAGE CONTENT INTENT" >> $GITHUB_STEP_SUMMARY
+            echo "   - SERVER MEMBERS INTENT" >> $GITHUB_STEP_SUMMARY
+            echo "   - GUILDS INTENT" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 実行情報" >> $GITHUB_STEP_SUMMARY
+          echo "- **起動理由**: ${{ github.event.inputs.reason || '手動起動' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **タイムアウト設定**: ${{ github.event.inputs.timeout_minutes || '60' }}分" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行者**: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行日時**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY

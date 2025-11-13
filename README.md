@@ -32,16 +32,34 @@ export TARGET_GUILD_ID="your_guild_id_here"
 python src/main.py
 ```
 
-### GitHub Secretsの設定（本番環境）
+### GitHub Actions上での実行
+
+GitHub Actions上でDiscord Botを実行できます。
+
+#### 1. GitHub Secretsの設定
 
 1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
 2. 以下のSecretを追加：
    - `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
 
-3. `main.py`を実行
+#### 2. Discord Botの起動
 
-#### Secretsの疎通テスト
+1. リポジトリの「Actions」タブを開く
+2. 「Discord Botの実行」ワークフローを選択
+3. 「Run workflow」ボタンをクリック
+4. 以下のオプションを設定：
+   - **起動理由**（任意）：Botを起動する理由を入力
+   - **実行時間の上限**：30分、60分、120分、180分、360分（6時間）から選択
+5. 「Run workflow」をクリックして実行
+
+**注意事項**：
+
+- GitHub Actionsの制限により、最大6時間（360分）まで実行可能です
+- タイムアウトに達すると自動的に停止します
+- 継続的な稼働が必要な場合は、別途サーバーやクラウドサービスの利用を推奨します
+
+#### 3. Secretsの疎通テスト
 
 Secretsの有効性は以下のタイミングで自動的にテストされます：
 
