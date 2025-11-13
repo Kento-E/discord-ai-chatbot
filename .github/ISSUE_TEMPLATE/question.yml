@@ -69,7 +69,7 @@ body:
         - 詳細説明（コード例や実装詳細を含む）
         - 一覧形式（箇条書きやリスト）
         - フローチャート・図解（テキストベース）
-      default: 1
+      default: 0
     validations:
       required: false
 
