@@ -63,8 +63,7 @@ GitHub Actions上でDiscord Botを実行できます。
 
 Secretsの有効性は以下のタイミングで自動的にテストされます：
 
-- **mainブランチへのPR起票時**：PR作成時、更新時に自動実行
-- **mainブランチへのpush時**：ワークフローファイル更新時に自動実行
+- **mainブランチへのpush時**：ワークフローファイル（`test-secrets.yml`）またはテストスクリプト（`test_connection.py`）の更新時に自動実行
 
 手動でテストを実行する場合：
 
