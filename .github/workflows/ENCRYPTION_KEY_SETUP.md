@@ -5,7 +5,6 @@
 ## 前提条件
 
 - OpenSSL がインストールされている環境（Linux、macOS、Windows WSLなど）
-- または、Pythonがインストールされている環境
 
 ## 暗号鍵の生成方法
 
