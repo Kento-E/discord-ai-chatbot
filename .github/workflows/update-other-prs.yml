@@ -26,8 +26,8 @@ jobs:
       - name: Update other PRs targeting the same base branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # PRイベントの場合はPR番号を設定、pushイベントの場合は '0' を設定
-          MERGED_PR_NUMBER: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || '0' }}
+          # PRイベントの場合はPR番号を設定、pushイベントの場合は 0 を設定
+          MERGED_PR_NUMBER: ${{ github.event_name == 'pull_request' && github.event.pull_request.number || 0 }}
           # pushイベントの場合はpushされたブランチ名、PRイベントの場合はPRのベースブランチ名を設定（フォールバック: 'main'）
           BASE_BRANCH: ${{ github.event_name == 'push' && github.ref_name || github.event.pull_request.base.ref || 'main' }}
         run: |
@@ -40,7 +40,7 @@ jobs:
             echo "✅ PR #${MERGED_PR_NUMBER} がマージされました"
             echo "🔍 ベースブランチ '${BASE_BRANCH}' を対象とする他のオープンなPRを検索中..."
             # 同じベースブランチを持つオープンなPRを取得（マージされたPRを除外）
-            OTHER_PRS=$(gh pr list --base "${BASE_BRANCH}" --state open --json number,headRefName,title --jq --argjson merged_pr "$MERGED_PR_NUMBER" '.[] | select(.number != $merged_pr) | .number')
+            OTHER_PRS=$(gh pr list --base "${BASE_BRANCH}" --state open --json number,headRefName,title --jq --arg merged_pr "$MERGED_PR_NUMBER" '.[] | select(.number != ($merged_pr | tonumber)) | .number')
           fi
           
           if [ -z "$OTHER_PRS" ]; then
