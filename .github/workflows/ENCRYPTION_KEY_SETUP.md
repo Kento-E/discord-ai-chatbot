@@ -102,8 +102,8 @@ history -c
 
 ## 関連ファイル
 
-- [generate-knowledge-data.yml](generate-knowledge-data.yml)
-- [run-discord-bot.yml](run-discord-bot.yml)
+- [知識データの生成と保存ワークフロー](generate-knowledge-data.yml)
+- [Discord Bot実行ワークフロー](run-discord-bot.yml)
 
 ## 参考情報
 

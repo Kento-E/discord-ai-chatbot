@@ -56,7 +56,7 @@ python src/fetch_messages.py
 **実行内容**：
 
 - 指定したDiscordサーバーから過去のメッセージを取得
-- 各チャンネルから`DEFAULT_MESSAGE_LIMIT`で設定された件数のメッセージを取得
+- 各チャンネルから設定された最大件数のメッセージを取得（詳細は`src/fetch_messages.py`の`DEFAULT_MESSAGE_LIMIT`を参照）
 - Botのメッセージは除外
 - `EXCLUDED_CHANNELS`で指定したチャンネルは除外（オプション）
 - `data/messages.json` に保存
@@ -208,6 +208,12 @@ Discordサーバーに新しいメッセージが追加された場合、以下�
 # 1. 新しいメッセージを取得
 python src/fetch_messages.py
 
+# 2. 埋め込みデータを再生成
+python src/prepare_dataset.py
+
+# 3. Botを再起動
+python src/main.py
+```
 
 ## Encrypted Workflow System（暗号化ワークフローシステム）の使い方
 
@@ -236,8 +242,8 @@ python src/fetch_messages.py
 ### アーティファクトの保持期間とスケジュール
 
 - アーティファクト（暗号化済み知識データ）は**90日間**保持されます（GitHubのデフォルト設定）。
-- ワークフローは**80日ごと**に自動実行されるようスケジュールされています。
-- これにより、アーティファクトの有効期限切れ前に新しいデータが常に保存され、データの消失を防ぎます。
+- ワークフローは**2ヶ月ごと**に自動実行されるようスケジュールされています（約60日間隔）。
+- これにより、アーティファクトの有効期限切れ前に新しいデータが常に保存され、データの消失を防ぎます（30日の余裕を確保）。
 
 ### 参考: ワークフローの手動実行例
 
@@ -245,12 +251,7 @@ python src/fetch_messages.py
 2. `generate-knowledge-data`ワークフローを選択
 3. 「Run workflow」ボタンをクリック
 
-詳細なワークフロー内容やSecretsの設定方法は、`.github/workflows/generate-knowledge-data.yml`およびリポジトリのREADMEも参照してください。
-python src/prepare_dataset.py
-
-# 3. Botを再起動
-python src/main.py
-```
+詳細なワークフロー内容やSecretsの設定方法は、[ワークフローファイル](../.github/workflows/generate-knowledge-data.yml)およびリポジトリのREADMEも参照してください。
 
 ## まとめ
 
