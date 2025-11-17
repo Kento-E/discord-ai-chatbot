@@ -44,7 +44,7 @@ jobs:
 
       - name: 暗号化された知識データをダウンロード
         id: download-artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         continue-on-error: true
         with:
           name: knowledge-data-encrypted
