@@ -130,7 +130,7 @@ permissions:
 ### 1. 初回セットアップ
 
 1. GitHub Secretsを設定：
-   - `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+   - `DISCORD_TOKEN`: Discord Botのトークン
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
    - `ENCRYPTION_KEY`: 暗号化/復号化用の鍵
 
