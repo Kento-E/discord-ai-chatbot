@@ -16,6 +16,11 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
