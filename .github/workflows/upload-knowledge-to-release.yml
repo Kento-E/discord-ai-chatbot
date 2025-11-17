@@ -6,6 +6,10 @@ on:
     types:
       - completed
 
+concurrency:
+  group: upload-knowledge-release
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -74,6 +78,12 @@ jobs:
           自動生成: [`知識データの生成と保存`](${{ github.event.workflow_run.html_url }}) ワークフロー
           EOF
 
+          # ファイルの存在確認
+          if [ ! -f knowledge-data.enc ]; then
+            echo "❌ エラー: knowledge-data.enc が見つかりません"
+            exit 1
+          fi
+
           # Releaseを作成
           gh release create "${TAG_NAME}" \
             --title "${RELEASE_NAME}" \
@@ -91,8 +101,7 @@ jobs:
 
           # knowledge-data-* タグのReleaseを取得（作成日時降順）
           RELEASES=$(gh release list --limit 100 --json tagName,createdAt \
-            --jq '.[] | select(.tagName | startswith("knowledge-data-")) | .tagName' \
-            | sort -r)
+            --jq '[.[] | select(.tagName | startswith("knowledge-data-"))] | sort_by(.createdAt) | reverse | .[].tagName')
 
           # 配列に変換
           RELEASE_ARRAY=($RELEASES)

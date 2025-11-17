@@ -51,13 +51,17 @@ jobs:
 
           # knowledge-data-* タグの最新Releaseを取得
           LATEST_RELEASE=$(gh release list --limit 100 --json tagName,createdAt \
-            --jq '.[] | select(.tagName | startswith("knowledge-data-")) | .tagName' \
-            | sort -r | head -n 1)
+            --jq '[.[] | select(.tagName | startswith("knowledge-data-"))] | sort_by(.createdAt) | reverse | .[0].tagName')
 
-          if [ -z "$LATEST_RELEASE" ]; then
-            echo "⚠️ 知識データのReleaseが見つかりません"
+          if [ -z "$LATEST_RELEASE" ] || [ "$LATEST_RELEASE" = "null" ]; then
+            echo "❌ エラー: 知識データのReleaseが見つかりません"
+            echo ""
+            echo "知識データを生成するには、以下のワークフローを実行してください:"
+            echo "  Actions → '知識データの生成と保存' → Run workflow"
+            echo ""
+            echo "詳細: .github/workflows/ENCRYPTION_KEY_SETUP.md を参照"
             echo "found=false" >> $GITHUB_OUTPUT
-            exit 0
+            exit 1
           fi
 
           echo "✅ 最新Release: ${LATEST_RELEASE}"

@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 以下の環境変数を設定してください：
 
-- `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+- `DISCORD_TOKEN`: Discord Botのトークン
 - `TARGET_GUILD_ID`: 取得対象のサーバーID
 
 ## 知識データの生成方法
