@@ -21,7 +21,7 @@ jobs:
           echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
 
       - name: ブランチを削除
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const headRef = '${{ steps.branch_info.outputs.head_ref }}';
