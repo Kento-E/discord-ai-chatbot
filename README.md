@@ -110,7 +110,7 @@ GitHub Actions上でDiscord Botを実行できます。
 
 1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
 2. 以下のSecretを追加：
-   - `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+   - `DISCORD_TOKEN`: Discord Botのトークン
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
    - `ENCRYPTION_KEY`: 知識データの暗号化/復号化に使用する鍵（詳細: [.github/workflows/ENCRYPTION_KEY_SETUP.md](.github/workflows/ENCRYPTION_KEY_SETUP.md)）
 
