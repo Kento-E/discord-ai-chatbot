@@ -31,7 +31,7 @@ jobs:
         run: |
           # タイムスタンプベースのタグ名を生成
           TIMESTAMP=$(date -u +'%Y%m%d-%H%M%S')
-          TAG_NAME="knowledge-data-${TIMESTAMP}"
+          TAG_NAME="knowledge-data-${TIMESTAMP}-${{ github.event.workflow_run.id }}"
           RELEASE_NAME="知識データ ${TIMESTAMP}"
 
           echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
