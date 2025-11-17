@@ -78,7 +78,7 @@ async def fetch_messages_from_guild(client, guild_id, message_limit=DEFAULT_MESS
             print('   Botに必要な権限がない可能性があります')
             return None
     
-    print(f'✅ ギルド "{guild.name}" に接続しました')
+    print(f'✅ ギルド (ID: {guild.id}) に接続しました')
     print(f'📊 チャンネル数: {len(guild.text_channels)}')
     print()
     
@@ -87,10 +87,10 @@ async def fetch_messages_from_guild(client, guild_id, message_limit=DEFAULT_MESS
     for channel in guild.text_channels:
         # 除外チャンネルリストに含まれている場合はスキップ
         if channel.name in excluded_channels:
-            print(f'⏩ チャンネル #{channel.name} をスキップ（除外リストに含まれています）')
+            print(f'⏩ チャンネル (ID: {channel.id}) をスキップ（除外リストに含まれています）')
             continue
             
-        print(f'📝 チャンネル #{channel.name} からメッセージを取得中...')
+        print(f'📝 チャンネル (ID: {channel.id}) からメッセージを取得中...')
         
         try:
             messages = []
