@@ -42,21 +42,64 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: 最新の知識データReleaseを取得
+        id: get-latest-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "📦 最新の知識データReleaseを検索中..."
+
+          # knowledge-data-* タグの最新Releaseを取得
+          LATEST_RELEASE=$(gh release list --limit 100 --json tagName,createdAt \
+            --jq '[.[] | select(.tagName | startswith("knowledge-data-"))] | sort_by(.createdAt) | reverse | .[0].tagName')
+
+          if [ -z "$LATEST_RELEASE" ] || [ "$LATEST_RELEASE" = "null" ]; then
+            echo "❌ エラー: 知識データのReleaseが見つかりません"
+            echo ""
+            echo "知識データを生成するには、以下のワークフローを実行してください:"
+            echo "  Actions → '知識データの生成と保存' → Run workflow"
+            echo ""
+            echo "詳細: .github/workflows/ENCRYPTION_KEY_SETUP.md を参照"
+            echo "found=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "✅ 最新Release: ${LATEST_RELEASE}"
+          echo "tag_name=${LATEST_RELEASE}" >> $GITHUB_OUTPUT
+          echo "found=true" >> $GITHUB_OUTPUT
+
       - name: 暗号化された知識データをダウンロード
-        id: download-artifact
-        uses: actions/download-artifact@v6
-        continue-on-error: true
-        with:
-          name: knowledge-data-encrypted
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        id: download-knowledge
+        if: steps.get-latest-release.outputs.found == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${{ steps.get-latest-release.outputs.tag_name }}"
+          echo "📥 知識データをダウンロード中: ${TAG_NAME}"
+
+          # Releaseからknowledge-data.encをダウンロード
+          gh release download "${TAG_NAME}" \
+            --pattern "knowledge-data.enc" \
+            --dir . \
+            --clobber
+
+          if [ -f knowledge-data.enc ]; then
+            echo "✅ ダウンロード完了"
+            ls -lh knowledge-data.enc
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ エラー: ダウンロードに失敗しました"
+            echo "success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
 
       - name: 知識データを復号化
-        if: steps.download-artifact.outcome == 'success'
+        if: steps.download-knowledge.outputs.success == 'true'
         env:
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
         run: |
           echo "🔓 知識データを復号化中..."
-          
+
           if [ -f knowledge-data.enc ]; then
             if openssl enc -aes-256-cbc -d -pbkdf2 -pass env:ENCRYPTION_KEY -in knowledge-data.enc | tar xzf - -C ./; then
               echo "✅ 復号化完了"

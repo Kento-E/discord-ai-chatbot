@@ -1,0 +1,157 @@
+name: 知識データのRelease自動アップロード
+
+on:
+  workflow_run:
+    workflows: ["知識データの生成と保存"]
+    types:
+      - completed
+
+concurrency:
+  group: upload-knowledge-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  upload-to-release:
+    runs-on: ubuntu-latest
+    # 元のワークフローが成功した場合のみ実行
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: 暗号化された知識データをダウンロード
+        uses: actions/download-artifact@v4
+        with:
+          name: knowledge-data-encrypted
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: タグ名とリリース名を生成
+        id: generate-tag
+        run: |
+          # タイムスタンプベースのタグ名を生成
+          TIMESTAMP=$(date -u +'%Y%m%d-%H%M%S')
+          TAG_NAME="knowledge-data-${TIMESTAMP}-${{ github.event.workflow_run.id }}"
+          RELEASE_NAME="知識データ ${TIMESTAMP}"
+
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "release_name=${RELEASE_NAME}" >> $GITHUB_OUTPUT
+          echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+
+          echo "📦 生成されたタグ名: ${TAG_NAME}"
+          echo "📦 リリース名: ${RELEASE_NAME}"
+
+      - name: GitHub Releaseを作成してアップロード
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${{ steps.generate-tag.outputs.tag_name }}"
+          RELEASE_NAME="${{ steps.generate-tag.outputs.release_name }}"
+
+          echo "🚀 GitHub Releaseを作成中..."
+
+          # リリースノートを作成
+          cat > release-notes.md << 'EOF'
+          ## 知識データ自動アップロード
+
+          このリリースには、Discord サーバーから取得した暗号化済み知識データが含まれています。
+
+          ### 📦 含まれるファイル
+          - `knowledge-data.enc`: 暗号化された知識データ（messages.json + embeddings.json）
+
+          ### 🔐 暗号化情報
+          - **アルゴリズム**: AES-256-CBC
+          - **形式**: tar.gz + OpenSSL暗号化
+
+          ### 📝 使用方法
+          このデータは `Discord Botの実行` ワークフローで自動的にダウンロード・復号化されます。
+
+          ### ⏱️ 生成日時
+          - **UTC**: ${{ steps.generate-tag.outputs.timestamp }}
+          - **ワークフロー実行ID**: ${{ github.event.workflow_run.id }}
+
+          ---
+          自動生成: [`知識データの生成と保存`](${{ github.event.workflow_run.html_url }}) ワークフロー
+          EOF
+
+          # ファイルの存在確認
+          if [ ! -f knowledge-data.enc ]; then
+            echo "❌ エラー: knowledge-data.enc が見つかりません"
+            exit 1
+          fi
+
+          # Releaseを作成
+          gh release create "${TAG_NAME}" \
+            --title "${RELEASE_NAME}" \
+            --notes-file release-notes.md \
+            knowledge-data.enc
+
+          echo "✅ Releaseの作成が完了しました"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${TAG_NAME}"
+
+      - name: 古いReleaseを削除（最新5件を保持）
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🗑️ 古いReleaseを削除中..."
+
+          # knowledge-data-* タグのReleaseを取得（作成日時降順）
+          RELEASES=$(gh release list --limit 100 --json tagName,createdAt \
+            --jq '[.[] | select(.tagName | startswith("knowledge-data-"))] | sort_by(.createdAt) | reverse | .[].tagName')
+
+          # 配列に変換
+          RELEASE_ARRAY=($RELEASES)
+          TOTAL=${#RELEASE_ARRAY[@]}
+
+          echo "📊 knowledge-data-* Releaseの総数: ${TOTAL}"
+
+          # 6件目以降を削除（最新5件を保持）
+          if [ $TOTAL -gt 5 ]; then
+            echo "🗑️ 古いReleaseを削除します（保持: 5件）"
+            for i in $(seq 5 $((TOTAL - 1))); do
+              TAG="${RELEASE_ARRAY[$i]}"
+              echo "  - 削除中: ${TAG}"
+              gh release delete "${TAG}" --yes --cleanup-tag || true
+            done
+            echo "✅ 削除完了"
+          else
+            echo "✅ 削除対象のReleaseはありません（現在: ${TOTAL}件）"
+          fi
+
+      - name: 実行結果をサマリーに出力
+        if: always()
+        run: |
+          if [ '${{ job.status }}' == 'success' ]; then
+            echo "## ✅ 知識データのRelease自動アップロード: 成功" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "知識データが正常にGitHub Releaseにアップロードされました。" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📦 Release情報" >> $GITHUB_STEP_SUMMARY
+            echo "- **タグ名**: \`${{ steps.generate-tag.outputs.tag_name }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **リリース名**: ${{ steps.generate-tag.outputs.release_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **ファイル**: knowledge-data.enc" >> $GITHUB_STEP_SUMMARY
+            echo "- **URL**: https://github.com/${{ github.repository }}/releases/tag/${{ steps.generate-tag.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔄 次のステップ" >> $GITHUB_STEP_SUMMARY
+            echo "Discord Botを起動する際、このReleaseから知識データが自動的にダウンロードされます。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ 知識データのRelease自動アップロード: 失敗" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "知識データのアップロード中にエラーが発生しました。" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 確認事項" >> $GITHUB_STEP_SUMMARY
+            echo "1. **元のワークフロー**: '知識データの生成と保存' が正常に完了しているか" >> $GITHUB_STEP_SUMMARY
+            echo "2. **アーティファクト**: knowledge-data-encrypted が正しく保存されているか" >> $GITHUB_STEP_SUMMARY
+            echo "3. **権限**: このワークフローに contents: write 権限があるか" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 実行情報" >> $GITHUB_STEP_SUMMARY
+          echo "- **元のワークフロー**: [\`知識データの生成と保存\`](${{ github.event.workflow_run.html_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **ワークフロー実行ID**: ${{ github.event.workflow_run.id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行日時**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY

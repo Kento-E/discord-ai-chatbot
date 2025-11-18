@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 以下の環境変数を設定してください：
 
-- `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+- `DISCORD_TOKEN`: Discord Botのトークン
 - `TARGET_GUILD_ID`: 取得対象のサーバーID
 
 ## 知識データの生成方法
@@ -110,10 +110,25 @@ GitHub Actions上でDiscord Botを実行できます。
 
 1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
 2. 以下のSecretを追加：
-   - `DISCORD_TOKEN`: Discord BotのトークンCHARACTER
+   - `DISCORD_TOKEN`: Discord Botのトークン
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
+   - `ENCRYPTION_KEY`: 知識データの暗号化/復号化に使用する鍵（詳細: [.github/workflows/ENCRYPTION_KEY_SETUP.md](.github/workflows/ENCRYPTION_KEY_SETUP.md)）
 
-#### 2. Discord Botの起動
+#### 2. 知識データの生成
+
+1. リポジトリの「Actions」タブを開く
+2. 「知識データの生成と保存」ワークフローを選択
+3. 「Run workflow」ボタンをクリックして実行
+4. 完了後、自動的に知識データがGitHub Releaseとして公開されます
+
+**知識データの保存について**：
+
+- 生成された知識データは自動的にGitHub Releaseに保存されます
+- タグ名: `knowledge-data-YYYYMMDD-HHMMSS-{workflow_run_id}` (UTC)
+- 最新5件のReleaseが保持され、古いものは自動削除されます
+- public リポジトリでは誰でもダウンロード可能です
+
+#### 3. Discord Botの起動
 
 1. リポジトリの「Actions」タブを開く
 2. 「Discord Botの実行」ワークフローを選択
@@ -125,11 +140,13 @@ GitHub Actions上でDiscord Botを実行できます。
 
 **注意事項**：
 
+- Botは最新のGitHub Releaseから知識データを自動的にダウンロードします
+- 「知識データの生成と保存」を先に実行する必要があります
 - GitHub Actionsの制限により、最大6時間（360分）まで実行可能です
 - タイムアウトに達すると自動的に停止します
 - 継続的な稼働が必要な場合は、別途サーバーやクラウドサービスの利用を推奨します
 
-#### 3. Secretsの疎通テスト
+#### 4. Secretsの疎通テスト
 
 Secretsの有効性は以下のタイミングで自動的にテストされます：
 

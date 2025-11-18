@@ -4,7 +4,72 @@
 
 ## ワークフロー一覧
 
-### 1. Auto Merge on Approval (`auto-merge.yml`)
+### 1. 知識データのRelease自動アップロード (`upload-knowledge-to-release.yml`)
+
+「知識データの生成と保存」ワークフローで作成された暗号化知識データを、GitHub Releaseとして自動的に公開するワークフローです。
+
+詳細なアーキテクチャ、利点、使用方法、トラブルシューティングについては [docs/RELEASE_FLOW.md](../../docs/RELEASE_FLOW.md) を参照してください。
+
+**トリガー**: `workflow_run` (「知識データの生成と保存」完了時)  
+**権限**: `contents: write`
+
+### 2. 知識データの生成と保存 (`generate-knowledge-data.yml`)
+
+#### 概要
+
+Discordサーバーからメッセージを取得し、AI学習用の埋め込みデータを生成して暗号化するワークフローです。生成されたデータは、GitHub Actionsのアーティファクトとして保存され、さらに「知識データのRelease自動アップロード」ワークフローによってReleaseとして公開されます。
+
+#### トリガー条件
+
+- 手動実行（`workflow_dispatch`）
+- 定期実行（スケジュール設定は[ワークフローファイル](generate-knowledge-data.yml)を参照）
+
+#### 動作
+
+1. Discordサーバーからメッセージを取得
+2. AI学習用の埋め込みデータを生成
+3. データを暗号化（AES-256-CBC）
+4. アーティファクトとして保存（保持期間: 90日）
+
+#### 必要な環境変数
+
+- `DISCORD_TOKEN`: Discord Botのトークン
+- `TARGET_GUILD_ID`: 取得対象のサーバーID
+- `EXCLUDED_CHANNELS`: 除外するチャンネルのリスト（任意）
+- `ENCRYPTION_KEY`: 暗号化に使用する鍵
+
+### 3. Discord Botの実行 (`run-discord-bot.yml`)
+
+#### 概要
+
+Discord AIエージェントBotを起動するワークフローです。最新のGitHub Releaseから暗号化された知識データをダウンロードし、復号化してBotを実行します。
+
+#### トリガー条件
+
+- 手動実行（`workflow_dispatch`）
+  - 実行理由（任意）
+  - 実行時間上限（オプション詳細は[ワークフローファイル](run-discord-bot.yml)を参照）
+
+#### 動作
+
+1. 最新の `knowledge-data-*` タグのReleaseを検索
+2. Release assetから暗号化された知識データをダウンロード
+3. 暗号化データを復号化
+4. Discord Botを起動
+
+#### 必要な環境変数
+
+- `DISCORD_TOKEN`: Discord Botのトークン
+- `TARGET_GUILD_ID`: 対象のサーバーID
+- `ENCRYPTION_KEY`: 復号化に使用する鍵（生成時と同じ鍵）
+
+#### 注意事項
+
+- 実行時間の上限はワークフローの設定で選択可能（[ワークフローファイル](run-discord-bot.yml)を参照）
+- 知識データのReleaseが存在しない場合はエラーになります
+- 「知識データの生成と保存」ワークフローを先に実行してください
+
+### 4. Auto Merge on Approval (`auto-merge.yml`)
 
 #### 概要
 
@@ -53,7 +118,7 @@ PRが承認されたときに、GitHubの自動マージ機能を有効化する
 - Draft状態のPRは自動マージされません（Ready for reviewに変更してから承認してください）
 - マージコンフリクトがある場合、自動マージは実行されません
 
-### 2. Auto Delete Branch on Merge (`auto-delete-branch.yml`)
+### 5. Auto Delete Branch on Merge (`auto-delete-branch.yml`)
 
 #### 概要
 
@@ -82,7 +147,7 @@ PRがマージされた後、ソースブランチを自動的に削除するワ
 - フォークからのPRの場合、元のリポジトリのブランチは削除されません
 - `auto-merge.yml`で自動マージされた場合、このワークフローは実行されますが、ブランチは既に削除されているため、無害なエラーが表示されます
 
-### 3. Update Other PRs After Merge (`update-other-prs.yml`)
+### 6. Update Other PRs After Merge (`update-other-prs.yml`)
 
 #### 概要
 
