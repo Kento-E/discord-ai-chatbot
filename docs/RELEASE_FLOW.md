@@ -83,11 +83,11 @@
 ### タグ命名規則
 
 ```
-knowledge-data-YYYYMMDD-HHMMSS
+knowledge-data-YYYYMMDD-HHMMSS-{workflow_run_id}
 ```
 
 例:
-- `knowledge-data-20241117-105300` → 2024年11月17日 10:53:00 UTC
+- `knowledge-data-20241117-105300-12345678` → 2024年11月17日 10:53:00 UTC、ワークフロー実行ID: 12345678
 
 ### Release保持ポリシー
 
