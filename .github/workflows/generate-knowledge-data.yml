@@ -16,7 +16,7 @@ permissions:
 jobs:
   generate-and-encrypt:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60  # データ量の増加を考慮して余裕を持った設定
 
     steps:
       - name: リポジトリをチェックアウト
