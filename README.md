@@ -124,7 +124,7 @@ GitHub Actions上でDiscord Botを実行できます。
 **知識データの保存について**：
 
 - 生成された知識データは自動的にGitHub Releaseに保存されます
-- タグ名: `knowledge-data-YYYYMMDD-HHMMSS` (UTC)
+- タグ名: `knowledge-data-YYYYMMDD-HHMMSS-{workflow_run_id}` (UTC)
 - 最新5件のReleaseが保持され、古いものは自動削除されます
 - public リポジトリでは誰でもダウンロード可能です
 
