@@ -97,17 +97,10 @@ knowledge-data-YYYYMMDD-HHMMSS-{workflow_run_id}
 
 ### 暗号化方式
 
+暗号化の詳細については [ENCRYPTION_KEY_SETUP.md](../.github/workflows/ENCRYPTION_KEY_SETUP.md) を参照してください。
+
 - **アルゴリズム**: AES-256-CBC
 - **鍵導出**: PBKDF2
-- **形式**: tar.gz + OpenSSL暗号化
-
-```bash
-# 暗号化（生成ワークフロー）
-tar czf - data/*.json | openssl enc -aes-256-cbc -salt -pbkdf2 -pass env:ENCRYPTION_KEY -out knowledge-data.enc
-
-# 復号化（Botワークフロー）
-openssl enc -aes-256-cbc -d -pbkdf2 -pass env:ENCRYPTION_KEY -in knowledge-data.enc | tar xzf - -C ./
-```
 
 ### 必要な権限
 
@@ -129,7 +122,7 @@ permissions:
 
 ### 1. 初回セットアップ
 
-1. GitHub Secretsを設定：
+1. GitHub Secretsを設定（詳細: [ENCRYPTION_KEY_SETUP.md](../.github/workflows/ENCRYPTION_KEY_SETUP.md)）：
    - `DISCORD_TOKEN`: Discord Botのトークン
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
    - `ENCRYPTION_KEY`: 暗号化/復号化用の鍵
@@ -175,27 +168,21 @@ permissions:
 
 ### 復号化エラーが発生する
 
+詳細なトラブルシューティングは [ENCRYPTION_KEY_SETUP.md](../.github/workflows/ENCRYPTION_KEY_SETUP.md) を参照してください。
+
 **原因**:
 - ENCRYPTION_KEYが間違っている
 - 生成時と実行時で異なる鍵を使用している
 
-**対処方法**:
-1. GitHub Secretsの`ENCRYPTION_KEY`が正しいか確認
-2. 鍵を紛失した場合は、新しい鍵で知識データを再生成
-
 ## セキュリティ考慮事項
+
+暗号鍵の管理とセキュリティの詳細については [ENCRYPTION_KEY_SETUP.md](../.github/workflows/ENCRYPTION_KEY_SETUP.md) を参照してください。
 
 ### Public リポジトリでの運用
 
 - **暗号化は必須**: 知識データは暗号化されてReleaseに保存される
 - **鍵の管理**: ENCRYPTION_KEYは絶対にコミットしない
 - **Release内容**: Release notesには機密情報を含めない
-
-### 推奨事項
-
-1. **定期的な鍵のローテーション**: 3〜6ヶ月ごと
-2. **鍵のバックアップ**: 安全な場所に保管
-3. **アクセス制御**: GitHub Secretsへのアクセスを制限
 
 ## 関連ファイル
 
