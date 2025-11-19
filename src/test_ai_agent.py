@@ -10,6 +10,7 @@ import sys
 def create_test_data():
     """テスト用の埋め込みデータとペルソナを作成"""
     data_dir = os.path.join(os.path.dirname(__file__), '../data')
+    os.makedirs(data_dir, exist_ok=True)
     
     # サンプルメッセージ
     messages = [

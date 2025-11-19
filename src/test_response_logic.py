@@ -2,8 +2,6 @@
 """
 応答生成ロジックの詳細テスト
 """
-import json
-import os
 import re
 import random
 

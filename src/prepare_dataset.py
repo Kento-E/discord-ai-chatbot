@@ -65,7 +65,10 @@ def generate_persona(texts):
     for text in texts:
         for pattern in greeting_patterns:
             if pattern in text:
-                greetings.append(text[:50])  # 最初の50文字まで
+                if len(text) > 50:
+                    greetings.append(text[:50] + '...')
+                else:
+                    greetings.append(text)
                 break
     
     # サンプルメッセージ（代表的なメッセージ）

@@ -45,20 +45,25 @@ def generate_response(query, top_k=5):
     # 類似メッセージを検索
     similar_messages = search_similar_message(query, top_k)
     
+    # 類似メッセージが見つからない場合
+    if not similar_messages:
+        return "わかりません。"
+    
     if not persona:
         # ペルソナがない場合は、類似メッセージをそのまま返す
-        return similar_messages[0] if similar_messages else "わかりません。"
+        return similar_messages[0]
     
     # 入力の分析
     query_lower = query.lower()
-    is_question = any(q in query for q in ['？', '?', 'ですか', 'ますか', 'なに', '何', 'どう', 'いつ', 'どこ', 'だれ', '誰'])
-    is_greeting = any(g in query for g in ['おはよう', 'こんにちは', 'こんばんは', 'お疲れ'])
+    is_question = any(q in query_lower for q in ['？', '?', 'ですか', 'ますか', 'なに', '何', 'どう', 'いつ', 'どこ', 'だれ', '誰'])
+    is_greeting = any(g in query_lower for g in ['おはよう', 'こんにちは', 'こんばんは', 'お疲れ'])
     
     # 挨拶への応答
-    if is_greeting and persona.get('sample_greetings'):
-        # ペルソナの挨拶サンプルから選択
-        response = random.choice(persona['sample_greetings'])
-        return response
+    if is_greeting:
+        greetings = persona.get('sample_greetings', [])
+        if greetings:
+            response = random.choice(greetings)
+            return response
     
     # 質問への応答生成
     if is_question:
@@ -66,10 +71,12 @@ def generate_response(query, top_k=5):
         base_message = similar_messages[0]
         
         # ペルソナの文末表現を使用
-        if persona.get('common_endings'):
+        common_endings = persona.get('common_endings', [])
+        if common_endings:
             # 既存の文末を置き換え
             base_without_ending = re.sub(r'[。！？\s]+$', '', base_message)
-            common_ending = random.choice(persona['common_endings'][:5])
+            endings_subset = common_endings[:5] if len(common_endings) >= 5 else common_endings
+            common_ending = random.choice(endings_subset)
             response = base_without_ending + common_ending
         else:
             response = base_message
@@ -85,8 +92,8 @@ def generate_response(query, top_k=5):
     
     if len(base_message) > target_length * 1.5:
         # 長すぎる場合は短縮
-        sentences = re.split(r'[。！？]', base_message)
-        response = sentences[0] + '。'
+        sentences = [s for s in re.split(r'[。！？]', base_message) if s.strip()]
+        response = (sentences[0] + '。') if sentences else base_message
     elif len(base_message) < target_length * 0.5:
         # 短すぎる場合は、2つ目の類似メッセージも参考にする
         if len(similar_messages) > 1:
@@ -97,9 +104,11 @@ def generate_response(query, top_k=5):
         response = base_message
     
     # ペルソナの文末表現を適用
-    if persona.get('common_endings'):
+    common_endings = persona.get('common_endings', [])
+    if common_endings:
         response = re.sub(r'[。！？\s]+$', '', response)
-        common_ending = random.choice(persona['common_endings'][:5])
+        endings_subset = common_endings[:5] if len(common_endings) >= 5 else common_endings
+        common_ending = random.choice(endings_subset)
         response = response + common_ending
     
     return response
