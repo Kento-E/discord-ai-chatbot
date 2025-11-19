@@ -1,7 +1,5 @@
 import discord
-import json
 import os
-from sentence_transformers import SentenceTransformer, util
 
 EMBED_PATH = os.path.join(os.path.dirname(__file__), '../data/embeddings.json')
 
@@ -23,20 +21,15 @@ intents.guilds = True
 
 client = discord.Client(intents=intents)
 
-# 埋め込みデータロード
+# ai_agent モジュールのインポート（埋め込みデータが存在する場合のみ）
+generate_response = None
 if os.path.exists(EMBED_PATH):
-	with open(EMBED_PATH, 'r') as f:
-		dataset = json.load(f)
-	texts = [item['text'] for item in dataset]
-	embeddings = [item['embedding'] for item in dataset]
-	model = SentenceTransformer('all-MiniLM-L6-v2')
-
-	def search_similar_message(query, top_k=3):
-		query_emb = model.encode(query)
-		import torch
-		scores = util.cos_sim(query_emb, torch.tensor(embeddings))[0]
-		top_results = scores.argsort(descending=True)[:top_k]
-		return [texts[i] for i in top_results]
+	try:
+		from ai_agent import generate_response
+		print('AIエージェント機能が正常にロードされました。')
+	except Exception as e:
+		print(f'AIエージェントのロード中にエラーが発生しました: {e}')
+		generate_response = None
 
 @client.event
 async def on_ready():
@@ -53,10 +46,13 @@ async def on_message(message):
 		if not query:
 			await message.channel.send('質問内容を入力してください。')
 			return
-		if os.path.exists(EMBED_PATH):
-			results = search_similar_message(query)
-			reply = '過去の類似メッセージ:\n' + '\n'.join(['- ' + r for r in results])
-			await message.channel.send(reply)
+		if os.path.exists(EMBED_PATH) and generate_response:
+			# 予測返信を生成
+			try:
+				response = generate_response(query)
+				await message.channel.send(response)
+			except Exception as e:
+				await message.channel.send(f'エラーが発生しました: {str(e)}')
 		else:
 			help_msg = (
 				'知識データが未生成です。まずメッセージ取得・整形を行ってください。\n'
