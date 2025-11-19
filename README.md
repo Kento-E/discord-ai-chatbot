@@ -179,6 +179,8 @@ Discordサーバーへのメッセージ送信や通知は行いません。
 
 詳細については、[.github/workflows/README.md](.github/workflows/README.md)を参照してください。
 
+**注意**: PRマージ後に新しいPRを自動作成することはできません。フォローアップタスクに取り組む場合は、[PRマージ後のワークフローガイド](docs/POST_MERGE_WORKFLOW.md)を参照してください。
+
 ## ディレクトリ構成
 
 - src/: メインロジック
