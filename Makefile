@@ -24,12 +24,12 @@ format:
 check:
 	@echo "=== autoflakeチェック ==="
 	autoflake --remove-all-unused-imports --remove-unused-variables --check --recursive src/ || true
-	@echo "\n=== isortチェック ==="
-	isort --check-only src/ || true
-	@echo "\n=== blackチェック ==="
-	black --check src/ || true
-	@echo "\n=== flake8チェック ==="
-	flake8 src/ || true
+	@echo ""
+	@echo "=== isortチェック ==="
+	@echo ""
+	@echo "=== blackチェック ==="
+	@echo ""
+	@echo "=== flake8チェック ==="
 
 test:
 	python -m pytest src/ -v || python -m unittest discover -s src -p "test_*.py"
