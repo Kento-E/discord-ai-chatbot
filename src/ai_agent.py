@@ -51,10 +51,8 @@ def apply_common_ending(base_text, common_endings):
 
     # 既存の文末句読点を除去
     text_without_ending = re.sub(r"[。！？\s]+$", "", base_text)
-    endings_subset = (
-        common_endings[:5] if len(common_endings) >= 5 else common_endings
-    )
-    common_ending = random.choice(endings_subset)
+    # すべての語尾からランダムに選択
+    common_ending = random.choice(common_endings)
 
     # 重複を避けるため、既に同じ語尾で終わっている場合は追加しない
     # common_endingから句読点を除いた部分を抽出
