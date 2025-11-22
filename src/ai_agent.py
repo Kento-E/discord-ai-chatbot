@@ -102,8 +102,6 @@ def ensure_initialized_with_callback(callback=None):
 
             _initialized = True
             return False  # 初回初期化完了
-        except FileNotFoundError:
-            raise
         except json.JSONDecodeError as e:
             raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
         except Exception as e:
