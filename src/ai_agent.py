@@ -35,58 +35,6 @@ def search_similar_message(query, top_k=3):
 # 予測される返信を生成
 
 
-def apply_common_ending(base_text, common_endings):
-    """
-    メッセージに共通の語尾を適用する（重複を避ける）
-
-    Args:
-        base_text: 元のメッセージ
-        common_endings: 適用可能な語尾のリスト
-
-    Returns:
-        語尾が適用されたメッセージ
-    """
-    if not common_endings:
-        return base_text
-
-    # 既存の文末句読点と絵文字を除去
-    text_without_punct = re.sub(r"[。！？\s\U0001F300-\U0001F9FF]+$", "", base_text)
-
-    # 完全な文末表現のパターン（丁寧語、過去形、断定形など）
-    complete_endings = [
-        r"ます$",
-        r"です$",
-        r"ました$",
-        r"でした$",
-        r"ません$",
-        r"ないです$",
-        r"ますね$",
-        r"ですね$",
-        r"ましょう$",
-        r"でしょう$",
-    ]
-
-    # 既に完全な文末がある場合は、語尾を追加しない
-    for pattern in complete_endings:
-        if re.search(pattern, text_without_punct):
-            return base_text
-
-    # すべての語尾からランダムに選択
-    common_ending = random.choice(common_endings)
-
-    # common_endingから句読点を除いた部分を抽出
-    ending_without_punct = re.sub(r"[。！？\s]+$", "", common_ending)
-    if not ending_without_punct:
-        # 純粋な句読点の語尾 - そのまま追加
-        return text_without_punct + common_ending
-    elif text_without_punct.endswith(ending_without_punct):
-        # 既にこの語尾を持っている - 元のテキストを使用
-        return base_text
-    else:
-        # 異なる語尾 - 置き換える
-        return text_without_punct + common_ending
-
-
 def generate_detailed_answer(similar_messages, persona):
     """
     質問に対して、複数の類似メッセージを組み合わせた詳細な回答を生成
@@ -153,18 +101,14 @@ def generate_detailed_answer(similar_messages, persona):
     if not response_parts:
         response = similar_messages[0]
     else:
-        # 各文にペルソナの文末表現を適用
+        # 各文を句点で終わらせる
         formatted_parts = []
-        for i, part in enumerate(response_parts):
-            if i == len(response_parts) - 1:
-                # 最後の文には文末表現を適用
-                formatted_parts.append(apply_common_ending(part, common_endings))
+        for part in response_parts:
+            # 途中の文は句点で終わらせる
+            if not re.search(r"[。！？]$", part):
+                formatted_parts.append(part + "。")
             else:
-                # 途中の文は句点で終わらせる
-                if not re.search(r"[。！？]$", part):
-                    formatted_parts.append(part + "。")
-                else:
-                    formatted_parts.append(part)
+                formatted_parts.append(part)
 
         response = "\n".join(formatted_parts)
 
@@ -210,9 +154,6 @@ def generate_casual_response(similar_messages, persona):
             response = base_message
     else:
         response = base_message
-
-    # ペルソナの文末表現を適用
-    response = apply_common_ending(response, common_endings)
 
     return response
 
