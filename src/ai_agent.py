@@ -17,6 +17,7 @@ import json
 import os
 import random
 import re
+import threading
 
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 PERSONA_PATH = os.path.join(os.path.dirname(__file__), "../data/persona.json")
@@ -27,11 +28,25 @@ _texts = None
 _embeddings = None
 _persona = None
 _initialized = False
+_init_lock = threading.Lock()
+
+
+def is_initialized():
+    """
+    初期化済みかどうかを返す
+    
+    Returns:
+        bool: 初期化済みの場合True、未初期化の場合False
+    """
+    return _initialized
 
 
 def _ensure_initialized():
     """
     モデルとデータを遅延ロードする（初回呼び出し時のみ実行）
+    
+    スレッドセーフな実装により、複数の同時呼び出しでも安全に初期化されます。
+    ダブルチェックロッキングパターンを使用して、パフォーマンスを最適化しています。
 
     Raises:
         FileNotFoundError: EMBED_PATHが存在しない場合
@@ -40,45 +55,48 @@ def _ensure_initialized():
     """
     global _model, _texts, _embeddings, _persona, _initialized
 
+    # 初期チェック（ロックなし）- パフォーマンス最適化
     if _initialized:
         return
 
-    try:
-        # sentence_transformersを遅延インポート（起動時間の最適化）
-        from sentence_transformers import SentenceTransformer
+    # ダブルチェックロッキングパターン
+    with _init_lock:
+        # ロック取得後に再度チェック
+        if _initialized:
+            return
 
-        # モデルのロード
-        _model = SentenceTransformer("all-MiniLM-L6-v2")
+        try:
+            # sentence_transformersを遅延インポート（起動時間の最適化）
+            from sentence_transformers import SentenceTransformer
 
-        # 埋め込みデータのロード
-        if not os.path.exists(EMBED_PATH):
-            raise FileNotFoundError(
-                f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
-                "prepare_dataset.pyを実行してデータを生成してください。"
-            )
+            # モデルのロード
+            _model = SentenceTransformer("all-MiniLM-L6-v2")
 
-        with open(EMBED_PATH, "r") as f:
-            dataset = json.load(f)
+            # 埋め込みデータのロード
+            if not os.path.exists(EMBED_PATH):
+                raise FileNotFoundError(
+                    f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
+                    "prepare_dataset.pyを実行してデータを生成してください。"
+                )
 
-        _texts = [item["text"] for item in dataset]
-        _embeddings = [item["embedding"] for item in dataset]
+            with open(EMBED_PATH, "r") as f:
+                dataset = json.load(f)
 
-        # ペルソナデータのロード
-        if os.path.exists(PERSONA_PATH):
-            with open(PERSONA_PATH, "r") as f:
-                _persona = json.load(f)
+            _texts = [item["text"] for item in dataset]
+            _embeddings = [item["embedding"] for item in dataset]
 
-        _initialized = True
-    except FileNotFoundError:
-        raise
-    except json.JSONDecodeError as e:
-        raise json.JSONDecodeError(
-            f"JSONファイルの解析に失敗しました: {e.msg}",
-            e.doc,
-            e.pos,
-        )
-    except Exception as e:
-        raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}")
+            # ペルソナデータのロード
+            if os.path.exists(PERSONA_PATH):
+                with open(PERSONA_PATH, "r") as f:
+                    _persona = json.load(f)
+
+            _initialized = True
+        except FileNotFoundError:
+            raise
+        except json.JSONDecodeError as e:
+            raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
+        except Exception as e:
+            raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}") from e
 
 # ユーザーの質問に最も近いメッセージを検索
 
