@@ -3,8 +3,6 @@ import os
 import random
 import re
 
-from sentence_transformers import SentenceTransformer, util
-
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 PERSONA_PATH = os.path.join(os.path.dirname(__file__), "../data/persona.json")
 
@@ -31,6 +29,9 @@ def _ensure_initialized():
         return
 
     try:
+        # sentence_transformersを遅延インポート（起動時間の最適化）
+        from sentence_transformers import SentenceTransformer
+
         # モデルのロード
         _model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -69,6 +70,9 @@ def _ensure_initialized():
 
 def search_similar_message(query, top_k=3):
     _ensure_initialized()
+    # utilを遅延インポート
+    from sentence_transformers import util
+
     query_emb = _model.encode(query)
     scores = util.cos_sim(query_emb, _embeddings)[0]
     top_results = scores.argsort(descending=True)[:top_k]
