@@ -62,9 +62,10 @@ async def on_message(message):
             # 予測返信を生成
             try:
                 # 初回応答時にローディングメッセージを表示
-                import ai_agent
+                # ai_agentモジュールは既にインポート済み
+                from ai_agent import _initialized
 
-                if not ai_agent._initialized:
+                if not _initialized:
                     loading_msg = await message.channel.send(
                         "🔄 初回起動中... AIモデルとデータをロードしています（数秒かかります）"
                     )

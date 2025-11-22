@@ -19,28 +19,50 @@ _initialized = False
 def _ensure_initialized():
     """
     モデルとデータを遅延ロードする（初回呼び出し時のみ実行）
+
+    Raises:
+        FileNotFoundError: EMBED_PATHが存在しない場合
+        json.JSONDecodeError: JSONファイルの解析に失敗した場合
+        Exception: モデルのロードに失敗した場合
     """
     global _model, _texts, _embeddings, _persona, _initialized
 
     if _initialized:
         return
 
-    # モデルのロード
-    _model = SentenceTransformer("all-MiniLM-L6-v2")
+    try:
+        # モデルのロード
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # 埋め込みデータのロード
-    with open(EMBED_PATH, "r") as f:
-        dataset = json.load(f)
+        # 埋め込みデータのロード
+        if not os.path.exists(EMBED_PATH):
+            raise FileNotFoundError(
+                f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
+                "prepare_dataset.pyを実行してデータを生成してください。"
+            )
 
-    _texts = [item["text"] for item in dataset]
-    _embeddings = [item["embedding"] for item in dataset]
+        with open(EMBED_PATH, "r") as f:
+            dataset = json.load(f)
 
-    # ペルソナデータのロード
-    if os.path.exists(PERSONA_PATH):
-        with open(PERSONA_PATH, "r") as f:
-            _persona = json.load(f)
+        _texts = [item["text"] for item in dataset]
+        _embeddings = [item["embedding"] for item in dataset]
 
-    _initialized = True
+        # ペルソナデータのロード
+        if os.path.exists(PERSONA_PATH):
+            with open(PERSONA_PATH, "r") as f:
+                _persona = json.load(f)
+
+        _initialized = True
+    except FileNotFoundError:
+        raise
+    except json.JSONDecodeError as e:
+        raise json.JSONDecodeError(
+            f"JSONファイルの解析に失敗しました: {e.msg}",
+            e.doc,
+            e.pos,
+        )
+    except Exception as e:
+        raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}")
 
 # ユーザーの質問に最も近いメッセージを検索
 
