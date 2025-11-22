@@ -3,13 +3,14 @@
 apply_common_ending関数のテスト
 不要な語尾が付く問題を再現・検証するためのテスト
 """
-import re
 import random
+import re
 
 
 def apply_common_ending(base_text, common_endings):
     """
     メッセージに共通の語尾を適用する（重複を避ける）
+    注: このテストでは、ai_agent.pyの実装をコピーしています
 
     Args:
         base_text: 元のメッセージ
