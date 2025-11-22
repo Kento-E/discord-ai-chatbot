@@ -49,23 +49,42 @@ def apply_common_ending(base_text, common_endings):
     if not common_endings:
         return base_text
 
-    # 既存の文末句読点を除去
-    text_without_ending = re.sub(r"[。！？\s]+$", "", base_text)
+    # 既存の文末句読点と絵文字を除去
+    text_without_punct = re.sub(r"[。！？\s\U0001F300-\U0001F9FF]+$", "", base_text)
+
+    # 完全な文末表現のパターン（丁寧語、過去形、断定形など）
+    complete_endings = [
+        r"ます$",
+        r"です$",
+        r"ました$",
+        r"でした$",
+        r"ません$",
+        r"ないです$",
+        r"ますね$",
+        r"ですね$",
+        r"ましょう$",
+        r"でしょう$",
+    ]
+
+    # 既に完全な文末がある場合は、語尾を追加しない
+    for pattern in complete_endings:
+        if re.search(pattern, text_without_punct):
+            return base_text
+
     # すべての語尾からランダムに選択
     common_ending = random.choice(common_endings)
 
-    # 重複を避けるため、既に同じ語尾で終わっている場合は追加しない
     # common_endingから句読点を除いた部分を抽出
     ending_without_punct = re.sub(r"[。！？\s]+$", "", common_ending)
     if not ending_without_punct:
         # 純粋な句読点の語尾 - そのまま追加
-        return text_without_ending + common_ending
-    elif text_without_ending.endswith(ending_without_punct):
+        return text_without_punct + common_ending
+    elif text_without_punct.endswith(ending_without_punct):
         # 既にこの語尾を持っている - 元のテキストを使用
         return base_text
     else:
         # 異なる語尾 - 置き換える
-        return text_without_ending + common_ending
+        return text_without_punct + common_ending
 
 
 def generate_detailed_answer(similar_messages, persona):
