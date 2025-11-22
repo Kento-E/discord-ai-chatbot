@@ -60,7 +60,6 @@ def test_detailed_answer_logic():
     ]
 
     persona = {
-
         "avg_message_length": 20.0,
     }
 
@@ -114,7 +113,6 @@ def test_casual_response_logic():
     print("=== カジュアル応答生成ロジックのテスト ===\n")
 
     persona = {
-
         "avg_message_length": 15.0,
     }
     target_length = persona["avg_message_length"]

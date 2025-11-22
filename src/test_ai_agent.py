@@ -45,7 +45,6 @@ def create_test_data():
         "total_messages": len(messages),
         "avg_message_length": sum(len(m) for m in messages) / len(messages),
         "common_words": ["今日", "会議", "プロジェクト", "ありがとう", "お疲れ"],
-
         "sample_greetings": ["おはようございます！", "こんにちは！", "お疲れ様です！"],
         "sample_messages": messages[:5],
         "description": f"過去{len(messages)}件のメッセージから学習したペルソナ",
@@ -80,7 +79,6 @@ def test_response_generation():
     print(f'  - 総メッセージ数: {persona["total_messages"]}')
     print(f'  - 平均メッセージ長: {persona["avg_message_length"]:.2f}文字')
     print(f'  - 頻出単語: {", ".join(persona["common_words"][:5])}')
-
 
     # 簡単な応答生成ロジックのテスト
     test_queries = [

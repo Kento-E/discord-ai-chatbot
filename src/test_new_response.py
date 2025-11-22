@@ -55,7 +55,6 @@ def create_test_data():
         "total_messages": len(messages),
         "avg_message_length": sum(len(m) for m in messages) / len(messages),
         "common_words": ["Python", "Bot", "Discord", "インストール", "方法"],
-
         "sample_greetings": ["おはようございます！", "こんにちは！", "お疲れ様です！"],
         "sample_messages": messages[:5],
         "description": f"過去{len(messages)}件のメッセージから学習したペルソナ",
