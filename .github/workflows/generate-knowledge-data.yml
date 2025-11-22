@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Pythonをセットアップ
         uses: actions/setup-python@v6
