@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: 暗号化された知識データをダウンロード
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: knowledge-data-encrypted
           github-token: ${{ secrets.GITHUB_TOKEN }}
