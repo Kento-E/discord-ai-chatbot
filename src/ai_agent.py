@@ -184,6 +184,30 @@ def search_similar_message(query, top_k=3):
 # 予測される返信を生成
 
 
+def _is_similar_sentence(sentence1, sentence2, threshold=0.6):
+    """
+    2つの文の類似度を判定（Jaccard類似度を使用）
+
+    Args:
+        sentence1: 比較する文1
+        sentence2: 比較する文2
+        threshold: 類似度の閾値（デフォルト0.6）
+
+    Returns:
+        bool: 類似度が閾値以上の場合True
+    """
+    if len(sentence1) == 0 or len(sentence2) == 0:
+        return False
+
+    set_sentence1 = set(sentence1)
+    set_sentence2 = set(sentence2)
+    intersection = len(set_sentence1 & set_sentence2)
+    union = len(set_sentence1 | set_sentence2)
+    similarity = intersection / union if union > 0 else 0
+
+    return similarity > threshold
+
+
 def _extract_actionable_sentences(message):
     """
     メッセージから実践的なアドバイス・アクションを含む文を抽出
@@ -300,17 +324,9 @@ def generate_detailed_answer(similar_messages, persona):
     # 重複を除去（Jaccard類似度で判定）
     unique_actionable = []
     for sentence in all_actionable:
-        is_duplicate = False
-        for used in used_sentences:
-            if len(sentence) > 0 and len(used) > 0:
-                set_sentence = set(sentence)
-                set_used = set(used)
-                intersection = len(set_sentence & set_used)
-                union = len(set_sentence | set_used)
-                similarity = intersection / union if union > 0 else 0
-                if similarity > 0.6:
-                    is_duplicate = True
-                    break
+        is_duplicate = any(
+            _is_similar_sentence(sentence, used) for used in used_sentences
+        )
 
         if not is_duplicate and len(sentence) >= 5:
             unique_actionable.append(sentence)
@@ -346,17 +362,9 @@ def generate_detailed_answer(similar_messages, persona):
     target_sentences = 3  # 最大3文
 
     for sentence in all_sentences:
-        is_duplicate = False
-        for used in used_sentences:
-            if len(sentence) > 0 and len(used) > 0:
-                set_sentence = set(sentence)
-                set_used = set(used)
-                intersection = len(set_sentence & set_used)
-                union = len(set_sentence | set_used)
-                similarity = intersection / union if union > 0 else 0
-                if similarity > 0.6:
-                    is_duplicate = True
-                    break
+        is_duplicate = any(
+            _is_similar_sentence(sentence, used) for used in used_sentences
+        )
 
         if not is_duplicate and len(sentence) >= 3:
             response_parts.append(sentence)

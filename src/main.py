@@ -69,7 +69,6 @@ async def on_message(message):
                 def on_first_init():
                     """初回初期化開始時のコールバック"""
                     # この時点ではasyncコンテキスト外なので、メッセージ送信は後で行う
-                    pass
 
                 # 初期化を実行し、初回かどうかを判定
                 was_already_initialized = ensure_initialized_with_callback(
