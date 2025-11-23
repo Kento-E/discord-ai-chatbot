@@ -276,8 +276,9 @@ def _organize_advice_as_steps(advice_sentences):
     if not advice_sentences:
         return []
 
-    # 手順を示すキーワード
-    step_keywords = ["まず", "次に", "その後", "最後に", "最初に", "1", "2", "3"]
+    # 手順を示すキーワード（より厳密なパターン）
+    step_keywords = ["まず", "次に", "その後", "最後に", "最初に"]
+    step_number_patterns = [r"^1\.", r"^2\.", r"^3\.", r"^4\.", r"^5\."]
 
     # 手順を示す文を優先的に配置
     step_sentences = []
@@ -285,11 +286,19 @@ def _organize_advice_as_steps(advice_sentences):
 
     for sentence in advice_sentences:
         is_step = False
+        # キーワードチェック
         for keyword in step_keywords:
             if keyword in sentence:
                 step_sentences.append(sentence)
                 is_step = True
                 break
+        # 番号付きパターンチェック
+        if not is_step:
+            for pattern in step_number_patterns:
+                if re.match(pattern, sentence):
+                    step_sentences.append(sentence)
+                    is_step = True
+                    break
         if not is_step:
             other_sentences.append(sentence)
 
@@ -322,6 +331,7 @@ def generate_detailed_answer(similar_messages, persona):
         all_sentences.extend(sentences)
 
     # 重複を除去（Jaccard類似度で判定）
+    # 注: O(n²)の計算量だが、通常は5〜10個程度の少数のアドバイスを扱うため問題ない
     unique_actionable = []
     for sentence in all_actionable:
         is_duplicate = any(
@@ -358,6 +368,7 @@ def generate_detailed_answer(similar_messages, persona):
             return "\n".join(formatted_advice)
 
     # 実践的アドバイスがない場合は、通常の文から構築
+    # 注: O(n²)の計算量だが、最大3文のみを対象とするため問題ない
     response_parts = []
     target_sentences = 3  # 最大3文
 
