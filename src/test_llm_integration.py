@@ -93,10 +93,14 @@ def test_integration_with_generate_response():
 
     # このテストは埋め込みデータが必要なため、
     # データが存在する場合のみ実行
-    embed_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "data", "embeddings.json"
+    embed_path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "..",
+            "data",
+            "embeddings.json",
+        )
     )
-    embed_path = os.path.abspath(embed_path)
 
     if not os.path.exists(embed_path):
         print("⚠ 埋め込みデータが存在しないため、スキップします")
