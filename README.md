@@ -105,34 +105,11 @@ Botの使い方や応答の詳細については、[詳細な使い方ガイド]
 
 ## LLM API統合（オプション）
 
-より自然で創造的な応答を生成するために、Google Gemini APIを使用できます。
+Google Gemini APIを使用して、より自然で創造的な応答を生成できます。APIキーが未設定の場合は従来のロジックで動作します。
 
-### メリット
+詳細な設定手順については、[LLM API統合ガイド](docs/LLM_API_SETUP.md)をご覧ください。
 
-- 過去メッセージを文脈として活用しながら、柔軟で自然な応答を生成
-- 質問に対してより詳細で適切な回答が可能
-- 無料枠で十分に利用可能（Gemini 1.5 Flash）
-
-### 設定方法
-
-1. [Google AI Studio](https://aistudio.google.com/)でAPIキーを取得
-2. 環境変数を設定：
-
-```bash
-export GEMINI_API_KEY="your_api_key_here"
-```
-
-3. Botを起動すると、自動的にLLM APIを使用します
-
-**注意事項：**
-
-- APIキーが設定されていない場合、自動的に従来のロジック（Sentence Transformersベース）で動作します
-- インターネット接続が必要です
-- 応答に数秒かかる場合があります
-
-詳細な設定手順とトラブルシューティングについては、[LLM API統合ガイド](docs/LLM_API_SETUP.md)をご覧ください。
-
-### ローカル環境での実行
+## ローカル環境での実行
 
 ```bash
 export DISCORD_TOKEN="your_bot_token_here"
