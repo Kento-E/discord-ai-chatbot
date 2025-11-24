@@ -2,14 +2,16 @@
 
 このプロジェクトは、Discordサーバーの過去メッセージを学習したAIエージェントBotを無料で稼働させるアプリです。
 
-過去のメッセージから学習したペルソナを基に、入力に対する予測返信を自動生成します。外部AIサービスを使わず、完全無料で稼働できます。
+過去のメッセージから学習したペルソナを基に、入力に対する予測返信を自動生成します。
 
 ## 機能概要
 
 - Discord APIを使ったメッセージ取得
 - 取得メッセージのAI学習データ化
 - **過去メッセージからペルソナを生成し、予測される返信を自動生成**
-- 無料AIエージェントによる応答（外部APIなし）
+- **LLM API統合による高度な応答生成（オプション）**
+  - Google Gemini API対応（無料枠で利用可能）
+  - APIキー未設定時は従来のロジックで動作（フォールバック機能）
 - Discord Botとして稼働
 
 ## クイックスタート
@@ -38,6 +40,10 @@ pre-commit install
 
 - `DISCORD_TOKEN`: Discord Botのトークン
 - `TARGET_GUILD_ID`: 取得対象のサーバーID
+- `GEMINI_API_KEY`（オプション）: Google Gemini APIキー
+  - 設定すると、LLM APIを使用した高度な応答生成が可能になります
+  - 未設定の場合は、従来のロジックで動作します（フォールバック）
+  - 無料枠で利用可能: [Gemini API](https://ai.google.dev/)
 
 ## 知識データの生成方法
 
@@ -100,11 +106,39 @@ python src/main.py
 
 Botの使い方や応答の詳細については、[詳細な使い方ガイド](docs/USAGE.md#botの使い方)をご覧ください。
 
+## LLM API統合（オプション）
+
+より自然で創造的な応答を生成するために、Google Gemini APIを使用できます。
+
+### メリット
+
+- 過去メッセージを文脈として活用しながら、柔軟で自然な応答を生成
+- 質問に対してより詳細で適切な回答が可能
+- 無料枠で十分に利用可能（Gemini 1.5 Flash）
+
+### 設定方法
+
+1. [Google AI Studio](https://aistudio.google.com/)でAPIキーを取得
+2. 環境変数を設定：
+
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+```
+
+3. Botを起動すると、自動的にLLM APIを使用します
+
+**注意事項：**
+
+- APIキーが設定されていない場合、自動的に従来のロジック（Sentence Transformersベース）で動作します
+- インターネット接続が必要です
+- 応答に数秒かかる場合があります
+
 ### ローカル環境での実行
 
 ```bash
 export DISCORD_TOKEN="your_bot_token_here"
 export TARGET_GUILD_ID="your_guild_id_here"
+export GEMINI_API_KEY="your_api_key_here"  # オプション
 
 # 1. メッセージ取得
 python src/fetch_messages.py
@@ -127,6 +161,7 @@ GitHub Actions上でDiscord Botを実行できます。
    - `DISCORD_TOKEN`: Discord Botのトークン
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
    - `ENCRYPTION_KEY`: 知識データの暗号化/復号化に使用する鍵（詳細: [.github/workflows/ENCRYPTION_KEY_SETUP.md](.github/workflows/ENCRYPTION_KEY_SETUP.md)）
+   - `GEMINI_API_KEY`（オプション）: Google Gemini APIキー（LLM応答生成を有効化）
 
 #### 2. 知識データの生成
 

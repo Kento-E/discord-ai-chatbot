@@ -1,6 +1,7 @@
 discord.py
 transformers
 sentence-transformers
+google-generativeai
 
 # Linter and formatter tools
 flake8

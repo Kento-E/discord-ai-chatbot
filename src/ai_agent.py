@@ -13,6 +13,7 @@ AIエージェントモジュール
 この設計により、モジュールのインポートは即座に完了し、
 Bot起動時間が大幅に短縮されます。
 """
+
 import json
 import os
 import random
@@ -34,7 +35,7 @@ _init_lock = threading.Lock()
 def is_initialized():
     """
     初期化済みかどうかを返す
-    
+
     Returns:
         bool: 初期化済みの場合True、未初期化の場合False
     """
@@ -44,37 +45,37 @@ def is_initialized():
 def ensure_initialized_with_callback(callback=None):
     """
     初期化を実行し、コールバックを通じて初回初期化かどうかを通知する
-    
+
     この関数は初期化処理を実行し、初回の初期化時のみコールバックを呼び出します。
     2回目以降の呼び出しでは何もせず、即座にTrueを返します。
-    
+
     Args:
         callback: 初回初期化時に呼び出される関数（引数なし）
-    
+
     Returns:
         bool: 既に初期化済みだった場合True、今回初めて初期化した場合False
-    
+
     Raises:
         FileNotFoundError: EMBED_PATHが存在しない場合
         json.JSONDecodeError: JSONファイルの解析に失敗した場合
         Exception: モデルのロードに失敗した場合
     """
     global _model, _texts, _embeddings, _persona, _initialized
-    
+
     # 既に初期化済み
     if _initialized:
         return True
-    
+
     # ダブルチェックロッキングパターン
     with _init_lock:
         # ロック取得後に再度チェック
         if _initialized:
             return True
-        
+
         # 初回初期化開始
         if callback:
             callback()
-        
+
         try:
             # sentence_transformersを遅延インポート（起動時間の最適化）
             from sentence_transformers import SentenceTransformer
@@ -111,7 +112,7 @@ def ensure_initialized_with_callback(callback=None):
 def _ensure_initialized():
     """
     モデルとデータを遅延ロードする（初回呼び出し時のみ実行）
-    
+
     スレッドセーフな実装により、複数の同時呼び出しでも安全に初期化されます。
     ダブルチェックロッキングパターンを使用して、パフォーマンスを最適化しています。
 
@@ -164,6 +165,68 @@ def _ensure_initialized():
             raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
         except Exception as e:
             raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}") from e
+
+
+def generate_response_with_llm(query, similar_messages):
+    """
+    LLM APIを使用して、過去メッセージを文脈として応答を生成
+
+    Args:
+        query: ユーザーからの入力メッセージ
+        similar_messages: 類似度の高いメッセージのリスト
+
+    Returns:
+        LLMが生成した応答文字列、またはNone（API使用不可の場合）
+    """
+    # 環境変数からAPIキーを取得
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        # google.generativeaiを遅延インポート（API使用時のみ）
+        import google.generativeai as genai
+
+        # APIの設定
+        genai.configure(api_key=api_key)
+
+        # モデルの設定（Gemini 1.5 Flash - 無料枠で利用可能）
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        # 文脈として過去メッセージを整形
+        context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
+
+        # プロンプトの構築
+        prompt = f"""あなたは過去のDiscordメッセージから学習したAIアシスタントです。
+以下の過去メッセージを参考に、ユーザーの質問に自然な日本語で回答してください。
+
+【過去メッセージ】
+{context}
+
+【ユーザーの質問】
+{query}
+
+【回答】
+過去メッセージのスタイルを参考にしつつ、自然で簡潔な回答を生成してください。"""
+
+        # APIリクエスト（タイムアウト設定）
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.7,
+                max_output_tokens=500,
+            ),
+        )
+
+        if response and response.text:
+            return response.text.strip()
+        return None
+
+    except Exception as e:
+        # APIエラー時はNoneを返してフォールバックに任せる
+        print(f"LLM API エラー: {e}")
+        return None
+
 
 # ユーザーの質問に最も近いメッセージを検索
 
@@ -323,6 +386,12 @@ def generate_response(query, top_k=5):
     if not similar_messages:
         return "わかりません。"
 
+    # LLM APIを試行（環境変数が設定されている場合）
+    llm_response = generate_response_with_llm(query, similar_messages)
+    if llm_response:
+        return llm_response
+
+    # フォールバック: LLM APIが使用できない場合は従来のロジックを使用
     if not _persona:
         # ペルソナがない場合は、類似メッセージをそのまま返す
         return similar_messages[0]
