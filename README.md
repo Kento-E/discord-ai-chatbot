@@ -133,6 +133,8 @@ export GEMINI_API_KEY="your_api_key_here"
 - インターネット接続が必要です
 - 応答に数秒かかる場合があります
 
+詳細な設定手順とトラブルシューティングについては、[LLM API統合ガイド](docs/LLM_API_SETUP.md)をご覧ください。
+
 ### ローカル環境での実行
 
 ```bash
