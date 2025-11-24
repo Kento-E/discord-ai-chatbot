@@ -63,23 +63,24 @@ async def on_message(message):
             try:
                 # 初回初期化の責任をai_agentモジュール側に持たせる
                 from ai_agent import ensure_initialized_with_callback
-
+                
                 loading_msg = None
-
+                
                 def on_first_init():
-                    """初回初期化開始時のコールバック（処理なし）"""
-
+                    """初回初期化開始時のコールバック"""
+                    nonlocal loading_msg
+                    # この時点ではasyncコンテキスト外なので、メッセージ送信は後で行う
+                    pass
+                
                 # 初期化を実行し、初回かどうかを判定
-                was_already_initialized = ensure_initialized_with_callback(
-                    on_first_init
-                )
-
+                was_already_initialized = ensure_initialized_with_callback(on_first_init)
+                
                 # 初回初期化の場合のみローディングメッセージを表示
                 if not was_already_initialized:
                     loading_msg = await message.channel.send(
                         "🔄 初回起動完了！AIモデルとデータをロードしました"
                     )
-
+                
                 try:
                     response = generate_response(query)
                 finally:

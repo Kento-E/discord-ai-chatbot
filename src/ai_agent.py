@@ -13,7 +13,6 @@ AIエージェントモジュール
 この設計により、モジュールのインポートは即座に完了し、
 Bot起動時間が大幅に短縮されます。
 """
-
 import json
 import os
 import random
@@ -35,7 +34,7 @@ _init_lock = threading.Lock()
 def is_initialized():
     """
     初期化済みかどうかを返す
-
+    
     Returns:
         bool: 初期化済みの場合True、未初期化の場合False
     """
@@ -45,37 +44,37 @@ def is_initialized():
 def ensure_initialized_with_callback(callback=None):
     """
     初期化を実行し、コールバックを通じて初回初期化かどうかを通知する
-
+    
     この関数は初期化処理を実行し、初回の初期化時のみコールバックを呼び出します。
     2回目以降の呼び出しでは何もせず、即座にTrueを返します。
-
+    
     Args:
         callback: 初回初期化時に呼び出される関数（引数なし）
-
+    
     Returns:
         bool: 既に初期化済みだった場合True、今回初めて初期化した場合False
-
+    
     Raises:
         FileNotFoundError: EMBED_PATHが存在しない場合
         json.JSONDecodeError: JSONファイルの解析に失敗した場合
         Exception: モデルのロードに失敗した場合
     """
     global _model, _texts, _embeddings, _persona, _initialized
-
+    
     # 既に初期化済み
     if _initialized:
         return True
-
+    
     # ダブルチェックロッキングパターン
     with _init_lock:
         # ロック取得後に再度チェック
         if _initialized:
             return True
-
+        
         # 初回初期化開始
         if callback:
             callback()
-
+        
         try:
             # sentence_transformersを遅延インポート（起動時間の最適化）
             from sentence_transformers import SentenceTransformer
@@ -112,7 +111,7 @@ def ensure_initialized_with_callback(callback=None):
 def _ensure_initialized():
     """
     モデルとデータを遅延ロードする（初回呼び出し時のみ実行）
-
+    
     スレッドセーフな実装により、複数の同時呼び出しでも安全に初期化されます。
     ダブルチェックロッキングパターンを使用して、パフォーマンスを最適化しています。
 
@@ -166,7 +165,6 @@ def _ensure_initialized():
         except Exception as e:
             raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}") from e
 
-
 # ユーザーの質問に最も近いメッセージを検索
 
 
@@ -184,219 +182,83 @@ def search_similar_message(query, top_k=3):
 # 予測される返信を生成
 
 
-def _is_similar_sentence(sentence1, sentence2, threshold=0.6):
-    """
-    2つの文の類似度を判定（Jaccard類似度を使用）
-
-    Args:
-        sentence1: 比較する文1
-        sentence2: 比較する文2
-        threshold: 類似度の閾値（デフォルト0.6）
-
-    Returns:
-        bool: 類似度が閾値以上の場合True
-    """
-    if len(sentence1) == 0 or len(sentence2) == 0:
-        return False
-
-    set_sentence1 = set(sentence1)
-    set_sentence2 = set(sentence2)
-    intersection = len(set_sentence1 & set_sentence2)
-    union = len(set_sentence1 | set_sentence2)
-    similarity = intersection / union if union > 0 else 0
-
-    return similarity > threshold
-
-
-def _extract_actionable_sentences(message):
-    """
-    メッセージから実践的なアドバイス・アクションを含む文を抽出
-
-    Args:
-        message: 対象メッセージ
-
-    Returns:
-        (actionable_sentences, all_sentences): 実践的な文のリストと全ての文のリスト
-    """
-    # メッセージを文に分割
-    sentences = [s.strip() for s in re.split(r"[。！？]", message) if s.strip()]
-
-    # 実践的アドバイスを示すパターン
-    actionable_patterns = [
-        r"(して|する|した)ください",
-        r"(して|する|した)方が良い",
-        r"(して|する|した)といい",
-        r"(する|した)方法",
-        r"手順",
-        r"やり方",
-        r"ステップ",
-        r"まず",
-        r"次に",
-        r"その後",
-        r"最後に",
-        r"必要",
-        r"重要",
-        r"確認",
-        r"注意",
-        r"ポイント",
-        r"コツ",
-        r"試して",
-        r"おすすめ",
-        r"推奨",
-        r"できます",
-        r"可能",
-        r"使って",
-        r"設定",
-        r"インストール",
-        r"実行",
-        r"変更",
-    ]
-
-    actionable_sentences = []
-    for sentence in sentences:
-        # 実践的アドバイスのパターンにマッチするかチェック
-        for pattern in actionable_patterns:
-            if re.search(pattern, sentence):
-                actionable_sentences.append(sentence)
-                break
-
-    return actionable_sentences, sentences
-
-
-def _organize_advice_as_steps(advice_sentences):
-    """
-    アドバイスを手順として整理
-
-    Args:
-        advice_sentences: アドバイス文のリスト
-
-    Returns:
-        整理されたアドバイスリスト
-    """
-    if not advice_sentences:
-        return []
-
-    # 手順を示すキーワード（より厳密なパターン）
-    step_keywords = ["まず", "次に", "その後", "最後に", "最初に"]
-    step_number_patterns = [r"^1\.", r"^2\.", r"^3\.", r"^4\.", r"^5\."]
-
-    # 手順を示す文を優先的に配置
-    step_sentences = []
-    other_sentences = []
-
-    for sentence in advice_sentences:
-        is_step = False
-        # キーワードチェック
-        for keyword in step_keywords:
-            if keyword in sentence:
-                step_sentences.append(sentence)
-                is_step = True
-                break
-        # 番号付きパターンチェック
-        if not is_step:
-            for pattern in step_number_patterns:
-                if re.match(pattern, sentence):
-                    step_sentences.append(sentence)
-                    is_step = True
-                    break
-        if not is_step:
-            other_sentences.append(sentence)
-
-    # 手順文を先に、その他を後に配置
-    return step_sentences + other_sentences
-
-
 def generate_detailed_answer(similar_messages, persona):
     """
-    質問に対して、知識データから実践的なアドバイスを抽出して回答を生成
+    質問に対して、複数の類似メッセージを組み合わせた詳細な回答を生成
 
     Args:
         similar_messages: 類似度の高いメッセージのリスト
         persona: ペルソナ情報
 
     Returns:
-        実践的なアドバイスを含む詳細な回答文字列
+        詳細な回答文字列（複数行）
     """
     if not similar_messages:
         return "わかりません。"
 
-    # 全メッセージから実践的アドバイスを抽出
-    all_actionable = []
-    all_sentences = []
+    avg_length = persona.get("avg_message_length", 50)
+
+    # 類似メッセージから文を抽出し、重複を避けながら組み合わせる
+    response_parts = []
     used_sentences = set()
+    target_length = max(avg_length * 3, 100)  # 質問には詳細に回答（最低100文字）
+    current_length = 0  # 現在の長さを追跡
 
     for message in similar_messages:
-        actionable, sentences = _extract_actionable_sentences(message)
-        all_actionable.extend(actionable)
-        all_sentences.extend(sentences)
+        # メッセージを文に分割
+        sentences = [s.strip() for s in re.split(r"[。！？]", message) if s.strip()]
 
-    # 重複を除去（Jaccard類似度で判定）
-    # 注: O(n²)の計算量だが、通常は5〜10個程度の少数のアドバイスを扱うため問題ない
-    unique_actionable = []
-    for sentence in all_actionable:
-        is_duplicate = any(
-            _is_similar_sentence(sentence, used) for used in used_sentences
-        )
+        for sentence in sentences:
+            # 重複チェック（類似度の高い文は除外）
+            is_duplicate = False
+            for used in used_sentences:
+                # 60%以上一致する場合は重複とみなす（Jaccard類似度を使用）
+                if len(sentence) > 0 and len(used) > 0:
+                    set_sentence = set(sentence)
+                    set_used = set(used)
+                    intersection = len(set_sentence & set_used)
+                    union = len(set_sentence | set_used)
+                    similarity = intersection / union if union > 0 else 0
+                    if similarity > 0.6:
+                        is_duplicate = True
+                        break
 
-        if not is_duplicate and len(sentence) >= 5:
-            unique_actionable.append(sentence)
-            used_sentences.add(sentence)
+            if not is_duplicate and len(sentence) >= 3:
+                response_parts.append(sentence)
+                used_sentences.add(sentence)
+                current_length += len(sentence)  # 長さを更新
 
-    # 実践的アドバイスが見つかった場合
-    if unique_actionable:
-        # 手順として整理
-        organized_advice = _organize_advice_as_steps(unique_actionable)
+                # 目標の長さに達したら終了
+                if current_length >= target_length:
+                    break
 
-        # 最大5つまでのアドバイスを含める
-        advice_to_include = organized_advice[:5]
+        # 十分な長さに達したら終了
+        if current_length >= target_length:
+            break
 
-        # 各アドバイスを句点で終わらせる
-        formatted_advice = []
-        for advice in advice_to_include:
-            if not re.search(r"[。！？]$", advice):
-                formatted_advice.append(advice + "。")
-            else:
-                formatted_advice.append(advice)
+    # 最低2文は含めるようにする
+    if len(response_parts) < 2 and len(similar_messages) >= 2:
+        # 最初の2つのメッセージをそのまま使用
+        response_parts = [similar_messages[0]]
+        if len(similar_messages) > 1:
+            response_parts.append(similar_messages[1])
 
-        # 手順が複数ある場合は番号付きで返す
-        if len(formatted_advice) >= 3:
-            numbered_advice = []
-            for i, advice in enumerate(formatted_advice, 1):
-                numbered_advice.append(f"{i}. {advice}")
-            return "\n".join(numbered_advice)
-        else:
-            return "\n".join(formatted_advice)
-
-    # 実践的アドバイスがない場合は、通常の文から構築
-    # 注: O(n²)の計算量だが、最大3文のみを対象とするため問題ない
-    response_parts = []
-    target_sentences = 3  # 最大3文
-
-    for sentence in all_sentences:
-        is_duplicate = any(
-            _is_similar_sentence(sentence, used) for used in used_sentences
-        )
-
-        if not is_duplicate and len(sentence) >= 3:
-            response_parts.append(sentence)
-            used_sentences.add(sentence)
-
-            if len(response_parts) >= target_sentences:
-                break
-
-    # 回答が空の場合は最初のメッセージを返す
+    # 文を結合して回答を構築
     if not response_parts:
-        return similar_messages[0]
+        response = similar_messages[0]
+    else:
+        # 各文を句点で終わらせる
+        formatted_parts = []
+        for part in response_parts:
+            # 各文を句点で終わらせる
+            if not re.search(r"[。！？]$", part):
+                formatted_parts.append(part + "。")
+            else:
+                formatted_parts.append(part)
 
-    # 各文を句点で終わらせる
-    formatted_parts = []
-    for part in response_parts:
-        if not re.search(r"[。！？]$", part):
-            formatted_parts.append(part + "。")
-        else:
-            formatted_parts.append(part)
+        response = "\n".join(formatted_parts)
 
-    return "\n".join(formatted_parts)
+    return response
 
 
 def generate_casual_response(similar_messages, persona):
