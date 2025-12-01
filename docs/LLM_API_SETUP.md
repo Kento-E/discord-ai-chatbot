@@ -22,26 +22,10 @@ LLM API統合により、過去のDiscordメッセージを文脈として活用
 
 ## 設定方法
 
-### ローカル環境
+環境変数`GEMINI_API_KEY`にAPIキーを設定します。
 
-```bash
-export GEMINI_API_KEY="your_api_key_here"
-```
-
-または、`.bashrc`や`.zshrc`に追加：
-
-```bash
-echo 'export GEMINI_API_KEY="your_api_key_here"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-### GitHub Actions
-
-1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
-2. 「New repository secret」をクリック
-3. Name: `GEMINI_API_KEY`
-4. Value: 取得したAPIキーを貼り付け
-5. 「Add secret」をクリック
+- **ローカル環境**: [README.md](../README.md#ローカル環境での実行)を参照
+- **GitHub Actions**: [README.md](../README.md#1-github-secretsの設定)を参照
 
 ## 動作確認
 
