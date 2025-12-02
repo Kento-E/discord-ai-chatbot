@@ -216,6 +216,9 @@ def generate_response_with_llm(query, similar_messages):
         handle_gemini_exception,
         log_llm_request,
         log_llm_response,
+        should_retry_with_backoff,
+        wait_for_retry,
+        MAX_RETRIES,
     )
 
     # 環境変数からAPIキーを取得
@@ -223,27 +226,26 @@ def generate_response_with_llm(query, similar_messages):
     if not api_key:
         return None
 
-    try:
-        global _gemini_model
-        
-        # google.generativeaiを遅延インポート（API使用時のみ）
-        import google.generativeai as genai
+    global _gemini_model
 
-        # APIの設定
-        genai.configure(api_key=api_key)
+    # google.generativeaiを遅延インポート（API使用時のみ）
+    import google.generativeai as genai
 
-        # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
-        if _gemini_model is None:
-            _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+    # APIの設定
+    genai.configure(api_key=api_key)
 
-        # 文脈として過去メッセージを整形
-        context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
+    # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
+    if _gemini_model is None:
+        _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 
-        # プロンプト設定を読み込み
-        prompts = _load_prompts()
+    # 文脈として過去メッセージを整形
+    context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
 
-        # プロンプトの構築（外部設定ファイルから読み込み）
-        prompt = f"""{prompts['llm_system_prompt']}
+    # プロンプト設定を読み込み
+    prompts = _load_prompts()
+
+    # プロンプトの構築（外部設定ファイルから読み込み）
+    prompt = f"""{prompts['llm_system_prompt']}
 
 {prompts['llm_context_header']}
 {context}
@@ -254,32 +256,45 @@ def generate_response_with_llm(query, similar_messages):
 {prompts['llm_response_header']}
 {prompts['llm_response_instruction']}"""
 
-        # リクエストをログに記録
-        log_llm_request(query, len(similar_messages[:5]))
+    # リクエストをログに記録
+    log_llm_request(query, len(similar_messages[:5]))
 
-        # APIリクエスト（タイムアウトを明示的に設定）
-        response = _gemini_model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.7,
-                max_output_tokens=500,
-            ),
-            request_options={"timeout": 30},
-        )
+    # リトライループ
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            # APIリクエスト（タイムアウトを明示的に設定）
+            response = _gemini_model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=500,
+                ),
+                request_options={"timeout": 30},
+            )
 
-        if response and response.text:
-            result = response.text.strip()
-            log_llm_response(True, len(result))
-            return result
+            if response and response.text:
+                result = response.text.strip()
+                log_llm_response(True, len(result))
+                return result
 
-        log_llm_response(False)
-        return None
+            log_llm_response(False)
+            return None
 
-    except Exception as e:
-        # 例外を適切に処理してログ出力
-        should_retry, error_type = handle_gemini_exception(e)
-        # フォールバックに任せる（リトライは将来の拡張で対応）
-        return None
+        except Exception as e:
+            # 例外を評価し、リトライすべきか判断
+            should_retry, wait_time = should_retry_with_backoff(e, attempt)
+
+            if should_retry:
+                wait_for_retry(wait_time)
+                continue
+            else:
+                # リトライ不可の場合はフォールバック
+                log_llm_response(False)
+                return None
+
+    # 最大リトライ回数に達した場合
+    log_llm_response(False)
+    return None
 
 
 # ユーザーの質問に最も近いメッセージを検索

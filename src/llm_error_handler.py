@@ -6,9 +6,15 @@ LLM APIエラーハンドリングモジュール
 """
 
 import logging
+import time
 
 # ロガーの設定
 logger = logging.getLogger(__name__)
+
+# リトライ設定
+MAX_RETRIES = 3
+INITIAL_BACKOFF_SECONDS = 1.0
+MAX_BACKOFF_SECONDS = 30.0
 
 
 class LLMError(Exception):
@@ -103,3 +109,53 @@ def log_llm_response(success, response_length=0):
         logger.debug(f"LLM API応答成功: response長={response_length}")
     else:
         logger.debug("LLM API応答なし: フォールバックを使用")
+
+
+def calculate_backoff(attempt):
+    """
+    指数バックオフで待機時間を計算
+
+    Args:
+        attempt: リトライ回数（0から開始）
+
+    Returns:
+        float: 待機時間（秒）
+    """
+    backoff = min(INITIAL_BACKOFF_SECONDS * (2**attempt), MAX_BACKOFF_SECONDS)
+    return backoff
+
+
+def should_retry_with_backoff(exception, attempt):
+    """
+    例外を評価し、リトライすべきかと待機時間を返す
+
+    Args:
+        exception: 発生した例外
+        attempt: 現在のリトライ回数
+
+    Returns:
+        tuple: (should_retry: bool, wait_seconds: float)
+    """
+    if attempt >= MAX_RETRIES:
+        logger.warning(f"LLM API最大リトライ回数到達: {MAX_RETRIES}回")
+        return False, 0
+
+    should_retry, error_type = handle_gemini_exception(exception)
+
+    if should_retry:
+        wait_time = calculate_backoff(attempt)
+        logger.info(f"LLM APIリトライ予定: {attempt + 1}/{MAX_RETRIES}回目, 待機時間={wait_time:.1f}秒")
+        return True, wait_time
+
+    return False, 0
+
+
+def wait_for_retry(wait_seconds):
+    """
+    リトライ前に待機
+
+    Args:
+        wait_seconds: 待機時間（秒）
+    """
+    if wait_seconds > 0:
+        time.sleep(wait_seconds)
