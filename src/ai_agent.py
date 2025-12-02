@@ -212,7 +212,7 @@ def generate_response_with_llm(query, similar_messages):
         LLMが生成した応答文字列、またはNone（API使用不可の場合）
     """
     # エラーハンドラーを遅延インポート
-    from src.llm_error_handler import (
+    from llm_error_handler import (
         handle_gemini_exception,
         log_llm_request,
         log_llm_response,
