@@ -213,17 +213,17 @@ def generate_response_with_llm(query, similar_messages):
     """
     # エラーハンドラーを遅延インポート
     from llm_error_handler import (
+        MAX_RETRIES,
         handle_gemini_exception,
         log_llm_request,
         log_llm_response,
         should_retry_with_backoff,
         wait_for_retry,
-        MAX_RETRIES,
     )
 
     # 環境変数からAPIキーを取得
     api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
+    if not api_key or not api_key.strip():
         return None
 
     global _gemini_model
