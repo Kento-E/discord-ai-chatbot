@@ -191,9 +191,11 @@ async def mode_command(interaction: discord.Interaction):
     embed.add_field(name="AIエージェント", value=agent_status, inline=True)
 
     # フッター情報
-    embed.set_footer(
-        text="LLMモードを有効にするには、GEMINI_API_KEY環境変数を設定してください"
-    )
+    if is_llm_mode:
+        footer_text = "LLMモードで動作中です"
+    else:
+        footer_text = "LLMモードを有効にするには、GEMINI_API_KEY環境変数を設定してください"
+    embed.set_footer(text=footer_text)
 
     await interaction.response.send_message(embed=embed)
 
