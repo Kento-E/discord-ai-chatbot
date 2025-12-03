@@ -144,60 +144,73 @@ async def on_message(message):
 @client.tree.command(name="mode", description="Botの実行モードを確認します")
 async def mode_command(interaction: discord.Interaction):
     """Botの実行モード（LLMモードか否か）を表示するスラッシュコマンド"""
-    # LLMモードの判定
-    is_llm_mode = is_llm_mode_enabled()
+    try:
+        # LLMモードの判定
+        is_llm_mode = is_llm_mode_enabled()
 
-    # 知識データの有無を確認
-    has_knowledge_data = os.path.exists(EMBED_PATH)
+        # 知識データの有無を確認
+        has_knowledge_data = os.path.exists(EMBED_PATH)
 
-    # 埋め込みを作成
-    embed = discord.Embed(
-        title="🤖 Bot実行モード情報",
-        color=discord.Color.blue(),
-        description="現在のBotの動作モードと状態を表示します",
-    )
-
-    # 実行モードフィールド
-    if is_llm_mode:
-        mode_status = "🧠 **LLMモード**"
-        mode_description = (
-            "Google Gemini APIを使用した高度な応答生成が有効です。\n"
-            "過去メッセージを文脈として、より自然で創造的な応答を生成します。"
-        )
-    else:
-        mode_status = "📝 **標準モード**"
-        mode_description = (
-            "ペルソナベースの応答生成を使用しています。\n"
-            "過去メッセージの類似度検索により応答を生成します。"
+        # 埋め込みを作成
+        embed = discord.Embed(
+            title="🤖 Bot実行モード情報",
+            color=discord.Color.blue(),
+            description="現在のBotの動作モードと状態を表示します",
         )
 
-    embed.add_field(name="実行モード", value=mode_status, inline=False)
-    embed.add_field(name="詳細", value=mode_description, inline=False)
+        # AIエージェントが無効な場合は実行モードを「利用不可」に変更
+        if not generate_response:
+            mode_status = "❌ **利用不可**"
+            mode_description = "知識データが未生成のため、Botは動作していません。"
+        else:
+            # 実行モードフィールド
+            if is_llm_mode:
+                mode_status = "🧠 **LLMモード**"
+                mode_description = (
+                    "Google Gemini APIを使用した高度な応答生成が有効です。\n"
+                    "過去メッセージを文脈として、より自然で創造的な応答を生成します。"
+                )
+            else:
+                mode_status = "📝 **標準モード**"
+                mode_description = (
+                    "ペルソナベースの応答生成を使用しています。\n"
+                    "過去メッセージの類似度検索により応答を生成します。"
+                )
 
-    # 知識データの状態
-    if has_knowledge_data:
-        knowledge_status = "✅ 利用可能"
-    else:
-        knowledge_status = "❌ 未生成"
+        embed.add_field(name="実行モード", value=mode_status, inline=False)
+        embed.add_field(name="詳細", value=mode_description, inline=False)
 
-    embed.add_field(name="知識データ", value=knowledge_status, inline=True)
+        # 知識データの状態
+        if has_knowledge_data:
+            knowledge_status = "✅ 利用可能"
+        else:
+            knowledge_status = "❌ 未生成"
 
-    # AIエージェント機能の状態
-    if generate_response:
-        agent_status = "✅ 有効"
-    else:
-        agent_status = "❌ 無効"
+        embed.add_field(name="知識データ", value=knowledge_status, inline=True)
 
-    embed.add_field(name="AIエージェント", value=agent_status, inline=True)
+        # AIエージェント機能の状態
+        if generate_response:
+            agent_status = "✅ 有効"
+        else:
+            agent_status = "❌ 無効"
 
-    # フッター情報
-    if is_llm_mode:
-        footer_text = "LLMモードで動作中です"
-    else:
-        footer_text = "LLMモードを有効にするには、GEMINI_API_KEY環境変数を設定してください"
-    embed.set_footer(text=footer_text)
+        embed.add_field(name="AIエージェント", value=agent_status, inline=True)
 
-    await interaction.response.send_message(embed=embed)
+        # フッター情報
+        if is_llm_mode:
+            footer_text = "LLMモードで動作中です"
+        else:
+            footer_text = (
+                "LLMモードを有効にするには、GEMINI_API_KEY環境変数を設定してください"
+            )
+        embed.set_footer(text=footer_text)
+
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        # エラーハンドリング: インタラクションが3秒以内に応答されないことを防ぐ
+        await interaction.response.send_message(
+            f"⚠️ エラーが発生しました: {str(e)}", ephemeral=True
+        )
 
 
 if __name__ == "__main__":
