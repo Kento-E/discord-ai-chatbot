@@ -21,31 +21,21 @@ MAX_BACKOFF_SECONDS = INITIAL_BACKOFF_SECONDS * (2 ** (MAX_RETRIES - 1))
 class LLMError(Exception):
     """LLM API関連のエラーの基底クラス"""
 
-    pass
-
 
 class LLMAuthenticationError(LLMError):
     """認証エラー（APIキーが無効など）"""
-
-    pass
 
 
 class LLMRateLimitError(LLMError):
     """レート制限エラー"""
 
-    pass
-
 
 class LLMTimeoutError(LLMError):
     """タイムアウトエラー"""
 
-    pass
-
 
 class LLMContentError(LLMError):
     """コンテンツ生成エラー（安全性フィルターなど）"""
-
-    pass
 
 
 def handle_gemini_exception(exception):
@@ -67,7 +57,9 @@ def handle_gemini_exception(exception):
         return False, "認証エラー"
 
     if "ResourceExhausted" in exception_type or "429" in exception_message:
-        logger.warning(f"LLM APIレート制限: リクエスト制限に達しました - {exception_type}")
+        logger.warning(
+            f"LLM APIレート制限: リクエスト制限に達しました - {exception_type}"
+        )
         return True, "レート制限"
 
     if "DeadlineExceeded" in exception_type or "timeout" in exception_message.lower():
@@ -75,11 +67,15 @@ def handle_gemini_exception(exception):
         return True, "タイムアウト"
 
     if "PermissionDenied" in exception_type:
-        logger.warning(f"LLM API権限エラー: アクセス権限がありません - {exception_type}")
+        logger.warning(
+            f"LLM API権限エラー: アクセス権限がありません - {exception_type}"
+        )
         return False, "権限エラー"
 
     if "blocked" in exception_message.lower() or "safety" in exception_message.lower():
-        logger.info(f"LLM APIコンテンツフィルター: 応答がブロックされました - {exception_type}")
+        logger.info(
+            f"LLM APIコンテンツフィルター: 応答がブロックされました - {exception_type}"
+        )
         return False, "コンテンツフィルター"
 
     # その他の例外
@@ -145,7 +141,9 @@ def should_retry_with_backoff(exception, attempt):
 
     if should_retry:
         wait_time = calculate_backoff(attempt)
-        logger.info(f"LLM APIリトライ予定: {attempt + 1}/{MAX_RETRIES}回目, 待機時間={wait_time:.1f}秒")
+        logger.info(
+            f"LLM APIリトライ予定: {attempt + 1}/{MAX_RETRIES}回目, 待機時間={wait_time:.1f}秒"
+        )
         return True, wait_time
 
     return False, 0

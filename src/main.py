@@ -64,6 +64,17 @@ if os.path.exists(EMBED_PATH):
 
         print("✅ AIエージェント機能が有効化されました")
         print("   💡 モデルとデータは初回応答時に自動的にロードされます")
+
+        # LLMモードかどうかを確認して表示
+        if is_llm_mode_enabled():
+            print(
+                "   🧠 LLMモード: Google Gemini APIを使用した高度な応答生成が有効です"
+            )
+        else:
+            print("   📝 標準モード: ペルソナベースの応答生成を使用します")
+            print(
+                "   💡 LLMモードを有効にするには、GEMINI_API_KEY環境変数を設定してください"
+            )
     except Exception as e:
         print(f"❌ AIエージェントのロード中にエラーが発生しました: {e}")
         generate_response = None
@@ -109,9 +120,7 @@ async def on_message(message):
 
                 def on_first_init():
                     """初回初期化開始時のコールバック"""
-                    nonlocal loading_msg
                     # この時点ではasyncコンテキスト外なので、メッセージ送信は後で行う
-                    pass
 
                 # 初期化を実行し、初回かどうかを判定
                 was_already_initialized = ensure_initialized_with_callback(

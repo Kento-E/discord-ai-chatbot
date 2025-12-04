@@ -31,8 +31,10 @@ _embeddings = None
 _persona = None
 _prompts = None
 _gemini_model = None  # Gemini APIモデルのキャッシュ
+_llm_first_success = False  # LLM初回成功フラグ
 _initialized = False
 _init_lock = threading.Lock()
+_llm_success_lock = threading.Lock()  # LLM成功メッセージ表示用ロック
 
 
 def is_initialized():
@@ -211,10 +213,11 @@ def generate_response_with_llm(query, similar_messages):
     Returns:
         LLMが生成した応答文字列、またはNone（API使用不可の場合）
     """
+    global _gemini_model
+
     # エラーハンドラーを遅延インポート
     from llm_error_handler import (
         MAX_RETRIES,
-        handle_gemini_exception,
         log_llm_request,
         log_llm_response,
         should_retry_with_backoff,
@@ -224,9 +227,9 @@ def generate_response_with_llm(query, similar_messages):
     # 環境変数からAPIキーを取得
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key or not api_key.strip():
+        # APIキーが設定されていない場合はNoneを返す
+        # (起動時のモード表示で既に案内済み)
         return None
-
-    global _gemini_model
 
     # google.generativeaiを遅延インポート（API使用時のみ）
     import google.generativeai as genai
@@ -275,8 +278,18 @@ def generate_response_with_llm(query, similar_messages):
             if response and response.text:
                 result = response.text.strip()
                 log_llm_response(True, len(result))
+                # 初回のLLM応答成功時にのみ確認メッセージを表示（スレッドセーフ）
+                with _llm_success_lock:
+                    global _llm_first_success
+                    if not _llm_first_success:
+                        print(
+                            "✅ LLM API応答成功: Gemini APIを使用して応答を生成しています"
+                        )
+                        _llm_first_success = True
                 return result
 
+            print("⚠️ LLM APIからの応答が空でした")
+            print("   標準モード（ペルソナベース）にフォールバックします")
             log_llm_response(False)
             return None
 
@@ -289,10 +302,15 @@ def generate_response_with_llm(query, similar_messages):
                 continue
             else:
                 # リトライ不可の場合はフォールバック
+                # エラー内容をコンソールに出力して、問題を可視化
+                print(f"⚠️ LLM API呼び出しに失敗: {type(e).__name__}: {str(e)}")
+                print("   標準モード（ペルソナベース）にフォールバックします")
                 log_llm_response(False)
                 return None
 
     # 最大リトライ回数に達した場合
+    print(f"⚠️ LLM API: 最大リトライ回数({MAX_RETRIES}回)に達しました")
+    print("   標準モード（ペルソナベース）にフォールバックします")
     log_llm_response(False)
     return None
 
