@@ -213,7 +213,7 @@ def generate_response_with_llm(query, similar_messages):
     Returns:
         LLMが生成した応答文字列、またはNone（API使用不可の場合）
     """
-    global _gemini_model, _llm_first_success
+    global _gemini_model
 
     # エラーハンドラーを遅延インポート
     from llm_error_handler import (
@@ -280,6 +280,7 @@ def generate_response_with_llm(query, similar_messages):
                 log_llm_response(True, len(result))
                 # 初回のLLM応答成功時にのみ確認メッセージを表示（スレッドセーフ）
                 with _llm_success_lock:
+                    global _llm_first_success
                     if not _llm_first_success:
                         print(
                             "✅ LLM API応答成功: Gemini APIを使用して応答を生成しています"
