@@ -51,7 +51,6 @@ def test_gemini_api_key():
                 max_output_tokens=10,  # 最小限のトークン数
                 temperature=0.1,  # 決定論的な応答
             ),
-            request_options={"timeout": 30},  # 30秒のタイムアウト
         )
 
         if response and response.text:
