@@ -172,22 +172,29 @@ GitHub Actions上でDiscord Botを実行できます。
 
 Secretsの有効性は以下のタイミングで自動的にテストされます：
 
-- **mainブランチへのpush時**：ワークフローファイル（`test-secrets.yml`）またはテストスクリプト（`test_connection.py`）の更新時に自動実行
+- **mainブランチへのpush時**：ワークフローファイル（`test-secrets.yml`）またはテストスクリプト（`test_connection.py`、`test_gemini_connection.py`）の更新時に自動実行
 
 手動でテストを実行する場合：
 
 1. リポジトリの「Actions」タブを開く
-2. 「Discord Secrets疎通テスト」ワークフローを選択
+2. 「Secrets疎通テスト」ワークフローを選択
 3. 「Run workflow」ボタンをクリックして手動実行
 
 テストでは以下を確認します：
 
+**Discord接続テスト**:
 - DISCORD_TOKENの有効性
 - Discord APIへの接続
 - TARGET_GUILD_IDで指定されたサーバーへのアクセス
 
-**注意**：このテストは読み取り専用の操作のみを実行し、
-Discordサーバーへのメッセージ送信や通知は行いません。
+**Gemini API接続テスト**（オプション）:
+- GEMINI_API_KEYの有効性
+- Gemini APIへの接続
+- LLMモードが利用可能かどうか
+
+**注意**：
+- これらのテストは読み取り専用の操作のみを実行し、Discordサーバーへのメッセージ送信や通知は行いません
+- GEMINI_API_KEYはオプションです。未設定の場合でもテストは成功します（標準モードで動作）
 
 ## GitHub Actions自動化機能
 
