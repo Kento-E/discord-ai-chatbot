@@ -51,6 +51,7 @@ def test_gemini_api_key():
                 max_output_tokens=10,  # 最小限のトークン数
                 temperature=0.1,  # 決定論的な応答
             ),
+            request_options={"timeout": 30},  # 30秒のタイムアウト
         )
 
         if response and response.text:
@@ -65,7 +66,7 @@ def test_gemini_api_key():
             return False
 
     except ImportError as e:
-        print(f"❌ エラー: google-generativeaiライブラリがインストールされていません")
+        print("❌ エラー: google-generativeaiライブラリがインストールされていません")
         print(f"   詳細: {e}")
         print()
         print("   以下のコマンドでインストールしてください:")
@@ -74,7 +75,7 @@ def test_gemini_api_key():
 
     except Exception as e:
         error_message = str(e)
-        print(f"❌ エラー: Gemini APIへの接続に失敗しました")
+        print("❌ エラー: Gemini APIへの接続に失敗しました")
         print(f"   詳細: {error_message}")
         print()
 
