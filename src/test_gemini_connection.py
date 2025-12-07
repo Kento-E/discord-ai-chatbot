@@ -101,11 +101,24 @@ def test_gemini_api_key():
                     print()
 
                     # エラーメッセージに基づいて詳細なガイダンスを提供
-                    invalid_key = (
+                    is_invalid_api_key = (
                         "API_KEY_INVALID" in error_message
                         or "invalid" in error_message.lower()
                     )
-                    if invalid_key:
+                    is_quota_error = (
+                        "quota" in error_message.lower()
+                        or "429" in error_message
+                    )
+                    is_permission_error = (
+                        "permission" in error_message.lower()
+                        or "403" in error_message
+                    )
+                    is_not_found_error = (
+                        "not found" in error_message.lower()
+                        or "404" in error_message
+                    )
+
+                    if is_invalid_api_key:
                         print("   原因: APIキーが無効です")
                         print("   対処: 正しいAPIキーを設定してください")
                         print()
@@ -115,18 +128,15 @@ def test_gemini_api_key():
                         print("   3. 'Get API Key'をクリック")
                         print("   4. 新しいAPIキーを作成")
 
-                    elif "quota" in error_message.lower() or "429" in error_message:
+                    elif is_quota_error:
                         print("   原因: APIのレート制限に達しました")
                         print("   対処: しばらく待ってから再試行してください")
 
-                    elif (
-                        "permission" in error_message.lower()
-                        or "403" in error_message
-                    ):
+                    elif is_permission_error:
                         print("   原因: APIへのアクセス権限がありません")
                         print("   対処: APIキーの権限を確認してください")
 
-                    elif "not found" in error_message.lower() or "404" in error_message:
+                    elif is_not_found_error:
                         print("   原因: 指定されたモデルが見つかりません")
                         print(f"   使用しようとしたモデル: {model_name}")
                         print()
