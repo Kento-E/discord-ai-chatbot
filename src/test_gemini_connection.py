@@ -8,6 +8,7 @@ GEMINI_API_KEYの有効性を検証します。
 import os
 import sys
 
+from gemini_config import GEMINI_MODEL_NAME
 from gemini_model_utils import (
     list_available_models,
     print_available_models,
@@ -46,8 +47,8 @@ def test_gemini_api_key():
         # APIキーを設定
         genai.configure(api_key=api_key)
 
-        # モデルを初期化
-        model_name = "gemini-2.0-flash-lite"
+        # モデルを初期化（設定ファイルから取得）
+        model_name = GEMINI_MODEL_NAME
         model = genai.GenerativeModel(model_name)
 
         # 簡単なテストメッセージを送信

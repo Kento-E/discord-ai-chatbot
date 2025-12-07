@@ -20,6 +20,8 @@ import random
 import re
 import threading
 
+from gemini_config import GEMINI_MODEL_NAME
+
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 PERSONA_PATH = os.path.join(os.path.dirname(__file__), "../data/persona.json")
 PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.yaml")
@@ -239,7 +241,7 @@ def generate_response_with_llm(query, similar_messages):
 
     # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
     if _gemini_model is None:
-        _gemini_model = genai.GenerativeModel("gemini-2.0-flash-lite")
+        _gemini_model = genai.GenerativeModel(GEMINI_MODEL_NAME)
 
     # 文脈として過去メッセージを整形
     context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
