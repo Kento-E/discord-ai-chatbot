@@ -136,6 +136,14 @@ jobs:
             echo "✅ 知識データが利用可能です"
           fi
 
+      - name: Gemini APIモデルの有効性を確認
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo ""
+          python src/validate_gemini_model.py
+          echo ""
+
       - name: Discord Botを起動
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
