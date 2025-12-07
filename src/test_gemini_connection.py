@@ -40,7 +40,7 @@ def test_gemini_api_key():
         # APIキーを設定
         genai.configure(api_key=api_key)
 
-        # モデルを初期化（gemini-2.0-flashを使用）
+        # モデルを初期化
         model = genai.GenerativeModel("gemini-2.0-flash")
 
         # 簡単なテストメッセージを送信
