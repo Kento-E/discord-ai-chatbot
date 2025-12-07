@@ -9,6 +9,7 @@ list_models() APIを使用するため、無料枠を消費しません。
 import os
 import sys
 
+from gemini_config import get_model_name
 from gemini_model_utils import (
     list_available_models,
     print_available_models,
@@ -16,16 +17,21 @@ from gemini_model_utils import (
 )
 
 
-def validate_model(model_name="gemini-2.0-flash"):
+def validate_model(model_name=None):
     """
     指定されたモデルが利用可能か確認する
 
     Args:
-        model_name: 検証するモデル名
+        model_name: 検証するモデル名（Noneの場合はconfig/gemini_model.yamlから取得、
+                   設定ファイルが読み込めない場合はデフォルト値を使用）
 
     Returns:
         bool: モデルが利用可能な場合True
     """
+    # モデル名が指定されていない場合は設定ファイルから取得
+    if model_name is None:
+        model_name = get_model_name()
+    
     api_key = os.environ.get("GEMINI_API_KEY")
 
     # APIキーが設定されていない場合はスキップ
@@ -76,10 +82,8 @@ def main():
     print("Gemini APIモデル有効性検証")
     print("=" * 60 + "\n")
 
-    # 現在使用されているモデル名
-    model_name = "gemini-2.0-flash"
-
-    result = validate_model(model_name)
+    # 設定ファイルから現在使用されているモデル名を取得
+    result = validate_model()
 
     print("\n" + "=" * 60)
     print("検証結果")

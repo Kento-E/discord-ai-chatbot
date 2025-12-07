@@ -86,11 +86,17 @@ LLM APIを使用している場合、より詳細で自然な応答が返され�
 
 これにより、APIキーなしでもBotは正常に動作し続けます。
 
+## モデル設定のカスタマイズ
+
+使用するGemini APIモデルは `config/gemini_model.yaml` で変更できます。設定ファイルの詳細は `config/gemini_model.yaml` 内のコメントを参照してください。
+
+モデルを変更する場合は、必ず [Gemini API Pricing](https://ai.google.dev/pricing) で料金と制限を確認してください。
+
 ## 料金について
 
-Google Gemini 2.0 Flashは無料枠が提供されています：
+Google Gemini 2.0 Flash-Liteは無料枠が提供されています：
 
-- **無料枠（2025年12月時点の参考値）**: 1分あたり15リクエスト、1日あたり1,500リクエスト
+- **無料枠（参考値）**: 1分あたり30リクエスト、1日あたり200リクエスト
 - **最新のレート制限・料金情報**: 必ず [Gemini API Pricing](https://ai.google.dev/pricing) をご確認ください。レート制限は変更される可能性があります。
 
 通常のDiscord Bot使用では、無料枠で十分に利用可能です。
