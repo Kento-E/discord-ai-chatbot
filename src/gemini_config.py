@@ -34,7 +34,7 @@ def get_model_name():
     """
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f)
+            config = yaml.safe_load(f) or {}
             return config.get("model_name", DEFAULT_MODEL_NAME)
     except FileNotFoundError:
         # 設定ファイルが見つからない場合はデフォルト値を返す
