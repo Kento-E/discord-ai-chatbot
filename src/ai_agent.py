@@ -239,7 +239,7 @@ def generate_response_with_llm(query, similar_messages):
 
     # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
     if _gemini_model is None:
-        _gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+        _gemini_model = genai.GenerativeModel("gemini-2.0-flash-lite")
 
     # 文脈として過去メッセージを整形
     context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
