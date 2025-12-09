@@ -25,13 +25,13 @@ def test_gemini_api_key():
     # 環境変数の存在確認
     if not api_key:
         print("⚠️ GEMINI_API_KEY が設定されていません")
-        print("   標準モード（ペルソナベース）で動作します")
-        return True  # 設定されていなくても正常（オプション）
+        print("   Botの動作にはAPIキーが必要です")
+        return False
 
     if not api_key.strip():
         print("⚠️ GEMINI_API_KEY が空です")
-        print("   標準モード（ペルソナベース）で動作します")
-        return True  # 空でも正常（オプション）
+        print("   Botの動作にはAPIキーが必要です")
+        return False
 
     print("📝 環境変数の確認:")
     print(f"  - GEMINI_API_KEY: 設定済み (長さ: {len(api_key)})")
@@ -66,7 +66,6 @@ def test_gemini_api_key():
             print(f"   応答: {response.text.strip()[:50]}")
             print()
             print("🎉 Gemini API疎通テストに成功しました！")
-            print("   LLMモードが有効になります")
             return True
         else:
             print("❌ エラー: APIからの応答が空です")

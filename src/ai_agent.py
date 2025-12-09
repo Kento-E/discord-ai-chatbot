@@ -216,7 +216,7 @@ def generate_response_with_llm(query, similar_messages):
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key or not api_key.strip():
         # APIキーが設定されていない場合はNoneを返す
-        # (起動時のモード表示で既に案内済み)
+        # (起動時に既に案内済み)
         return None
 
     # google.generativeaiを遅延インポート（API使用時のみ）
@@ -337,7 +337,7 @@ def generate_response(query, top_k=5):
     if not api_key or not api_key.strip():
         raise ValueError(
             "GEMINI_API_KEYが設定されていません。\n"
-            "LLMモードを使用するには、GEMINI_API_KEY環境変数を設定してください。"
+            "GEMINI_API_KEY環境変数を設定してください。"
         )
 
     # 類似メッセージを検索

@@ -9,7 +9,7 @@ import sys
 def test_llm_api_availability():
     """
     LLM APIの利用可能性を確認（環境状態チェック）
-    
+
     このテストは環境変数の設定状態を表示するだけで、
     APIキーの有無にかかわらず常に成功を返します。
     実際のAPI呼び出しテストは別の関数で実施されます。
@@ -19,10 +19,10 @@ def test_llm_api_availability():
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key:
         print("✓ GEMINI_API_KEY が設定されています")
-        print("  LLMモードが利用可能です")
+        print("  APIが利用可能です")
     else:
         print("⚠ GEMINI_API_KEY が設定されていません")
-        print("  このBotはLLMモード専用のため、APIキーが必要です")
+        print("  BotにはAPIキーが必要です")
         print("  ※ これはテストの失敗ではなく、環境の状態を示しています")
     # APIキーの有無にかかわらず、テストは成功とする（環境の状態を確認するだけ）
     return True
@@ -91,7 +91,7 @@ def test_api_key_requirement():
         test_query = "テスト"
 
         try:
-            response = generate_response(test_query)
+            generate_response(test_query)
             print("❌ APIキーがなくても応答が返されました（異常）")
             result = False
         except ValueError as e:
