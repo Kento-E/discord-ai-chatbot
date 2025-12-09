@@ -7,7 +7,13 @@ import sys
 
 
 def test_llm_api_availability():
-    """LLM APIの利用可能性をテスト"""
+    """
+    LLM APIの利用可能性を確認（環境状態チェック）
+    
+    このテストは環境変数の設定状態を表示するだけで、
+    APIキーの有無にかかわらず常に成功を返します。
+    実際のAPI呼び出しテストは別の関数で実施されます。
+    """
     print("=== LLM API利用可能性テスト ===\n")
 
     api_key = os.environ.get("GEMINI_API_KEY")
