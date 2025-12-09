@@ -2,16 +2,15 @@
 
 このプロジェクトは、Discordサーバーの過去メッセージを学習したAIエージェントBotを無料で稼働させるアプリです。
 
-過去のメッセージから学習したペルソナを基に、入力に対する予測返信を自動生成します。
+LLM（Google Gemini API）を使用して、過去のメッセージを文脈として自然な返信を生成します。
 
 ## 機能概要
 
 - Discord APIを使ったメッセージ取得
 - 取得メッセージのAI学習データ化
-- **過去メッセージからペルソナを生成し、予測される返信を自動生成**
-- **LLM API統合による高度な応答生成（オプション）**
+- **LLM API（Google Gemini）による高度な応答生成**
   - Google Gemini API対応（無料枠で利用可能）
-  - APIキー未設定時は従来のロジックで動作（フォールバック機能）
+  - 過去メッセージを文脈として活用
 - **実行モード確認用スラッシュコマンド** (`/mode`)
   - 詳細は[使い方ガイド](docs/USAGE.md#コマンド)を参照
 - Discord Botとして稼働
@@ -78,30 +77,28 @@ python src/prepare_dataset.py
 - `data/messages.json` から メッセージを読み込み
 - Sentence Transformerモデル（all-MiniLM-L6-v2）で埋め込みベクトルを生成
 - 埋め込みデータを `data/embeddings.json` に保存
-- **過去メッセージから学習したペルソナ情報を `data/persona.json` に生成**
 
 **注意**: 初回実行時はモデルのダウンロードに時間がかかる場合があります。
 
-**ペルソナ生成**:
-- 頻出単語や文末表現を抽出
-- 挨拶表現やメッセージスタイルを学習
-- 応答生成時にペルソナに基づいた自然な返信を生成
+### 手順3: LLM APIの設定
 
-### 手順3: Botの起動
+Google Gemini APIキーを設定します。
 
-知識データの生成が完了したら、Botを起動できます。
+```bash
+export GEMINI_API_KEY="your_api_key_here"
+```
+
+詳細な設定手順については、[LLM API統合ガイド](docs/LLM_API_SETUP.md)をご覧ください。
+
+### 手順4: Botの起動
+
+知識データの生成とAPIキーの設定が完了したら、Botを起動できます。
 
 ```bash
 python src/main.py
 ```
 
 Botの使い方や応答の詳細については、[詳細な使い方ガイド](docs/USAGE.md#botの使い方)をご覧ください。
-
-## LLM API統合（オプション）
-
-Google Gemini APIを使用して、より自然で創造的な応答を生成できます。APIキーが未設定の場合は従来のロジックで動作します。
-
-詳細な設定手順については、[LLM API統合ガイド](docs/LLM_API_SETUP.md)をご覧ください。
 
 ## ローカル環境での実行
 
@@ -110,6 +107,7 @@ Google Gemini APIを使用して、より自然で創造的な応答を生成で
 ```bash
 export DISCORD_TOKEN="your_bot_token_here"
 export TARGET_GUILD_ID="your_guild_id_here"
+export GEMINI_API_KEY="your_api_key_here"
 
 # 1. メッセージ取得
 python src/fetch_messages.py
@@ -121,7 +119,7 @@ python src/prepare_dataset.py
 python src/main.py
 ```
 
-**LLM機能を使用する場合**: [LLM API統合ガイド](docs/LLM_API_SETUP.md)を参照してください。
+**GEMINI_API_KEYの取得方法**: [LLM API統合ガイド](docs/LLM_API_SETUP.md)を参照してください。
 
 ### GitHub Actions上での実行
 
