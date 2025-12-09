@@ -86,7 +86,7 @@ async def on_ready():
     print("🤖 Botが起動し、メッセージの受信を開始しました")
     if generate_response:
         print("💬 メンションまたは !ask コマンドで質問できます")
-    print("📋 /mode コマンドで実行モードを確認できます")
+    print("📋 /mode コマンドでBot状態を確認できます")
 
 
 @client.event
@@ -163,43 +163,42 @@ async def on_message(message):
             await message.channel.send(help_msg)
 
 
-@client.tree.command(name="mode", description="Botの実行モードを確認します")
+@client.tree.command(name="mode", description="Botの状態を確認します")
 async def mode_command(interaction: discord.Interaction):
-    """Botの実行モード（LLMモードか否か）を表示するスラッシュコマンド"""
+    """Botの状態（利用可否）を表示するスラッシュコマンド"""
     try:
-        # LLMモードの判定
-        is_llm_mode = is_llm_mode_enabled()
+        # APIキーの設定確認
+        has_api_key = is_llm_mode_enabled()
 
         # 知識データの有無を確認
         has_knowledge_data = os.path.exists(EMBED_PATH)
 
         # 埋め込みを作成
         embed = discord.Embed(
-            title="🤖 Bot実行モード情報",
+            title="🤖 Bot状態",
             color=discord.Color.blue(),
-            description="現在のBotの動作モードと状態を表示します",
+            description="現在のBotの状態を表示します",
         )
 
-        # AIエージェントが無効な場合は実行モードを「利用不可」に変更
+        # Bot状態の判定
         if not generate_response:
-            mode_status = "❌ **利用不可**"
-            mode_description = "知識データが未生成のため、Botは動作していません。"
-        elif not is_llm_mode:
-            mode_status = "⚠️ **設定不足**"
-            mode_description = (
+            status = "❌ **利用不可**"
+            status_description = "知識データが未生成のため、Botは動作していません。"
+        elif not has_api_key:
+            status = "⚠️ **設定不足**"
+            status_description = (
                 "GEMINI_API_KEYが設定されていません。\n"
-                "このBotはLLMモード専用です。GEMINI_API_KEY環境変数を設定してください。"
+                "環境変数GEMINI_API_KEYを設定してください。"
             )
         else:
-            # 実行モードフィールド
-            mode_status = "🧠 **LLMモード**"
-            mode_description = (
-                "Google Gemini APIを使用した応答生成が有効です。\n"
-                "過去メッセージを文脈として、自然で創造的な応答を生成します。"
+            status = "✅ **利用可能**"
+            status_description = (
+                "Google Gemini APIを使用して応答を生成します。\n"
+                "過去メッセージを文脈として活用します。"
             )
 
-        embed.add_field(name="実行モード", value=mode_status, inline=False)
-        embed.add_field(name="詳細", value=mode_description, inline=False)
+        embed.add_field(name="状態", value=status, inline=False)
+        embed.add_field(name="詳細", value=status_description, inline=False)
 
         # 知識データの状態
         if has_knowledge_data:
@@ -209,21 +208,21 @@ async def mode_command(interaction: discord.Interaction):
 
         embed.add_field(name="知識データ", value=knowledge_status, inline=True)
 
-        # AIエージェント機能の状態
-        if generate_response:
-            agent_status = "✅ 有効"
+        # APIキーの状態
+        if has_api_key:
+            api_key_status = "✅ 設定済み"
         else:
-            agent_status = "❌ 無効"
+            api_key_status = "❌ 未設定"
 
-        embed.add_field(name="AIエージェント", value=agent_status, inline=True)
+        embed.add_field(name="APIキー", value=api_key_status, inline=True)
 
         # フッター情報
         if not generate_response:
             footer_text = "知識データを生成してください"
-        elif not is_llm_mode:
+        elif not has_api_key:
             footer_text = "GEMINI_API_KEY環境変数を設定してください"
         else:
-            footer_text = "LLMモードで動作中です"
+            footer_text = "Botは正常に動作しています"
         embed.set_footer(text=footer_text)
 
         await interaction.response.send_message(embed=embed)
