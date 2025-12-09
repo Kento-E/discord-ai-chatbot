@@ -11,8 +11,6 @@ LLM（Google Gemini API）を使用して、過去のメッセージを文脈と
 - **LLM API（Google Gemini）による高度な応答生成**
   - Google Gemini API対応（無料枠で利用可能）
   - 過去メッセージを文脈として活用
-- **Bot状態確認用スラッシュコマンド** (`/mode`)
-  - 詳細は[使い方ガイド](docs/USAGE.md#コマンド)を参照
 - Discord Botとして稼働
 
 ## クイックスタート

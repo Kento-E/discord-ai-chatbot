@@ -36,23 +36,9 @@ class MyClient(discord.Client):
             print("✅ スラッシュコマンドをギルドに同期しました")
         except Exception as e:
             print(f"⚠️ スラッシュコマンドの同期に失敗しました: {e}")
-            print(
-                "   Bot自体は動作しますが、/modeコマンドが使用できない可能性があります"
-            )
 
 
 client = MyClient(intents=intents)
-
-
-def is_llm_mode_enabled():
-    """
-    LLMモードが有効かどうかを判定
-
-    Returns:
-        bool: GEMINI_API_KEYが設定されている場合True、そうでない場合False
-    """
-    llm_api_key = os.environ.get("GEMINI_API_KEY")
-    return llm_api_key is not None and llm_api_key.strip() != ""
 
 
 # ai_agent モジュールのインポート（埋め込みデータが存在する場合のみ）
@@ -65,16 +51,13 @@ if os.path.exists(EMBED_PATH):
         print("✅ AIエージェント機能が有効化されました")
         print("   💡 モデルとデータは初回応答時に自動的にロードされます")
 
-        # LLMモードの確認
-        if is_llm_mode_enabled():
-            print(
-                "   🧠 LLMモード: Google Gemini APIを使用した応答生成が有効です"
-            )
+        # APIキーの確認
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if api_key and api_key.strip():
+            print("   🧠 Google Gemini APIを使用した応答生成が有効です")
         else:
             print("   ⚠️ 警告: GEMINI_API_KEYが設定されていません")
-            print(
-                "   💡 このBotはLLMモード専用です。GEMINI_API_KEY環境変数を設定してください"
-            )
+            print("   💡 GEMINI_API_KEY環境変数を設定してください")
     except Exception as e:
         print(f"❌ AIエージェントのロード中にエラーが発生しました: {e}")
         generate_response = None
@@ -86,7 +69,6 @@ async def on_ready():
     print("🤖 Botが起動し、メッセージの受信を開始しました")
     if generate_response:
         print("💬 メンションまたは !ask コマンドで質問できます")
-    print("📋 /mode コマンドでBot状態を確認できます")
 
 
 @client.event
@@ -106,7 +88,7 @@ async def on_message(message):
         # スラッシュコマンドらしき入力を検出した場合は案内メッセージを表示
         if query.startswith("/"):
             await message.channel.send(
-                "スラッシュコマンド（例: `/mode`）は単独で入力する必要があります。\n"
+                "スラッシュコマンドは単独で入力する必要があります。\n"
                 "メンションや `!ask` を使用する場合は、質問内容のみを入力してください（スラッシュは不要です）。"
             )
             return
@@ -161,76 +143,6 @@ async def on_message(message):
                 "詳細は docs/USAGE.md またはREADMEをご覧ください。"
             )
             await message.channel.send(help_msg)
-
-
-@client.tree.command(name="mode", description="Botの状態を確認します")
-async def mode_command(interaction: discord.Interaction):
-    """Botの状態（利用可否）を表示するスラッシュコマンド"""
-    try:
-        # APIキーの設定確認
-        has_api_key = is_llm_mode_enabled()
-
-        # 知識データの有無を確認
-        has_knowledge_data = os.path.exists(EMBED_PATH)
-
-        # 埋め込みを作成
-        embed = discord.Embed(
-            title="🤖 Bot状態",
-            color=discord.Color.blue(),
-            description="現在のBotの状態を表示します",
-        )
-
-        # Bot状態の判定
-        if not generate_response:
-            status = "❌ **利用不可**"
-            status_description = "知識データが未生成のため、Botは動作していません。"
-        elif not has_api_key:
-            status = "⚠️ **設定不足**"
-            status_description = (
-                "GEMINI_API_KEYが設定されていません。\n"
-                "環境変数GEMINI_API_KEYを設定してください。"
-            )
-        else:
-            status = "✅ **利用可能**"
-            status_description = (
-                "Google Gemini APIを使用して応答を生成します。\n"
-                "過去メッセージを文脈として活用します。"
-            )
-
-        embed.add_field(name="状態", value=status, inline=False)
-        embed.add_field(name="詳細", value=status_description, inline=False)
-
-        # 知識データの状態
-        if has_knowledge_data:
-            knowledge_status = "✅ 利用可能"
-        else:
-            knowledge_status = "❌ 未生成"
-
-        embed.add_field(name="知識データ", value=knowledge_status, inline=True)
-
-        # APIキーの状態
-        if has_api_key:
-            api_key_status = "✅ 設定済み"
-        else:
-            api_key_status = "❌ 未設定"
-
-        embed.add_field(name="APIキー", value=api_key_status, inline=True)
-
-        # フッター情報
-        if not generate_response:
-            footer_text = "知識データを生成してください"
-        elif not has_api_key:
-            footer_text = "GEMINI_API_KEY環境変数を設定してください"
-        else:
-            footer_text = "Botは正常に動作しています"
-        embed.set_footer(text=footer_text)
-
-        await interaction.response.send_message(embed=embed)
-    except Exception as e:
-        # エラーハンドリング: インタラクションが3秒以内に応答されないことを防ぐ
-        await interaction.response.send_message(
-            f"⚠️ エラーが発生しました: {str(e)}", ephemeral=True
-        )
 
 
 if __name__ == "__main__":
