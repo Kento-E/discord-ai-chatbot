@@ -44,7 +44,9 @@ def test_llm_response_generation():
     try:
         from ai_agent import generate_response_with_llm
 
-        response = generate_response_with_llm(test_query, test_similar_messages)
+        response, error_message = generate_response_with_llm(
+            test_query, test_similar_messages
+        )
 
         if response:
             print("✓ LLM APIからの応答を取得しました")
@@ -52,7 +54,10 @@ def test_llm_response_generation():
             print(f"\n【応答】\n{response}")
             return True
         else:
-            print("⚠ LLM APIからの応答がありません（APIキー未設定またはエラー）")
+            if error_message:
+                print(f"⚠ LLM APIからの応答がありません: {error_message}")
+            else:
+                print("⚠ LLM APIからの応答がありません（APIキー未設定またはエラー）")
             return False
 
     except Exception as e:
