@@ -199,7 +199,9 @@ def generate_response_with_llm(query, similar_messages):
         similar_messages: 類似度の高いメッセージのリスト
 
     Returns:
-        LLMが生成した応答文字列、またはNone（API使用不可の場合）
+        tuple: (response: str or None, error_message: str or None)
+            - response: LLMが生成した応答文字列、またはNone（エラー時）
+            - error_message: エラーメッセージ、またはNone（成功時）
     """
     global _gemini_model
 
@@ -217,7 +219,7 @@ def generate_response_with_llm(query, similar_messages):
     if not api_key or not api_key.strip():
         # APIキーが設定されていない場合はNoneを返す
         # (起動時に既に案内済み)
-        return None
+        return None, None
 
     # google.generativeaiを遅延インポート（API使用時のみ）
     import google.generativeai as genai
@@ -251,6 +253,7 @@ def generate_response_with_llm(query, similar_messages):
     log_llm_request(query, len(similar_messages[:5]))
 
     # リトライループ
+    last_error_message = None
     for attempt in range(MAX_RETRIES + 1):
         try:
             # APIリクエスト（タイムアウトを明示的に設定）
@@ -274,16 +277,18 @@ def generate_response_with_llm(query, similar_messages):
                             "✅ LLM API応答成功: Gemini APIを使用して応答を生成しています"
                         )
                         _llm_first_success = True
-                return result
+                return result, None
 
             error_msg = "LLM APIからの応答が空でした"
             print(f"⚠️ {error_msg}")
             log_llm_response(False)
-            return None
+            return None, error_msg
 
         except Exception as e:
             # 例外を評価し、リトライすべきか判断
-            should_retry, wait_time = should_retry_with_backoff(e, attempt)
+            retry_info = should_retry_with_backoff(e, attempt)
+            should_retry, wait_time, user_message = retry_info
+            last_error_message = user_message
 
             if should_retry:
                 wait_for_retry(wait_time)
@@ -293,13 +298,13 @@ def generate_response_with_llm(query, similar_messages):
                 error_msg = f"LLM API呼び出しに失敗: {type(e).__name__}: {str(e)}"
                 print(f"⚠️ {error_msg}")
                 log_llm_response(False)
-                return None
+                return None, user_message
 
     # 最大リトライ回数に達した場合
     error_msg = f"LLM API: 最大リトライ回数({MAX_RETRIES}回)に達しました"
     print(f"⚠️ {error_msg}")
     log_llm_response(False)
-    return None
+    return None, last_error_message if last_error_message else error_msg
 
 
 # ユーザーの質問に最も近いメッセージを検索
@@ -351,15 +356,18 @@ def generate_response(query, top_k=5):
         )
 
     # LLM APIを使用して応答を生成
-    llm_response = generate_response_with_llm(query, similar_messages)
+    llm_response, error_message = generate_response_with_llm(query, similar_messages)
     if llm_response:
         return llm_response
 
     # LLM APIが失敗した場合
-    raise RuntimeError(
-        "LLM APIからの応答取得に失敗しました。\n"
-        "APIキーが正しいか、ネットワーク接続を確認してください。"
-    )
+    if error_message:
+        raise RuntimeError(f"LLM APIからの応答取得に失敗しました。\n{error_message}")
+    else:
+        raise RuntimeError(
+            "LLM APIからの応答取得に失敗しました。\n"
+            "APIキーが正しいか、ネットワーク接続を確認してください。"
+        )
 
 
 # テスト用
