@@ -127,7 +127,7 @@ async def on_message(message):
                 # APIキー未設定または類似メッセージ未検出
                 await message.channel.send(f"⚠️ 設定エラー: {str(e)}")
             except RuntimeError as e:
-                # LLM API failed
+                # LLM API応答取得失敗
                 await message.channel.send(f"⚠️ APIエラー: {str(e)}")
             except Exception as e:
                 await message.channel.send(f"⚠️ エラーが発生しました: {str(e)}")
