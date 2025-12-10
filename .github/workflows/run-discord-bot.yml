@@ -210,7 +210,7 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Gemini APIモデルの更新が必要です**" >> $GITHUB_STEP_SUMMARY
             echo "- 現在のモデルが利用できない可能性があります" >> $GITHUB_STEP_SUMMARY
-            echo "- LLMモードが正常に動作しない可能性があります" >> $GITHUB_STEP_SUMMARY
+            echo "- Gemini APIを使用した応答生成が正常に動作しない可能性があります" >> $GITHUB_STEP_SUMMARY
             echo "- 詳細は上記のログ「Gemini APIモデルの有効性を確認」を参照してください" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
