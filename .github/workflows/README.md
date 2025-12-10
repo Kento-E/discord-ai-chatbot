@@ -71,6 +71,7 @@ Discord AIエージェントBotを起動するワークフローです。最新�
 - `DISCORD_TOKEN`: Discord Botのトークン
 - `TARGET_GUILD_ID`: 対象のサーバーID
 - `ENCRYPTION_KEY`: 復号化に使用する鍵（生成時と同じ鍵）
+- `GEMINI_API_KEY`: Google Gemini APIキー（LLMモードに必須）
 
 #### 注意事項
 
