@@ -52,10 +52,13 @@ def handle_gemini_exception(exception):
     exception_message = str(exception)
 
     # google.generativeai の例外を分類
+    msg_lower = exception_message.lower()
+
     if (
         "InvalidArgument" in exception_type
-        or "invalid" in exception_message.lower()
-        or "invalid api key" in exception_message.lower()
+        or "invalid api key" in msg_lower
+        or "invalid argument" in msg_lower
+        or "authentication failed" in msg_lower
     ):
         logger.warning(f"LLM API認証エラー: APIキーが無効です - {exception_type}")
         return (
@@ -66,9 +69,9 @@ def handle_gemini_exception(exception):
 
     if (
         "ResourceExhausted" in exception_type
-        or "ResourceExhausted" in exception_message
         or "429" in exception_message
-        or "rate limit" in exception_message.lower()
+        or "rate limit" in msg_lower
+        or "quota exceeded" in msg_lower
     ):
         logger.warning(
             f"LLM APIレート制限: リクエスト制限に達しました - {exception_type}"
@@ -81,8 +84,8 @@ def handle_gemini_exception(exception):
 
     if (
         "DeadlineExceeded" in exception_type
-        or "DeadlineExceeded" in exception_message
-        or "timeout" in exception_message.lower()
+        or "timeout" in msg_lower
+        or "timed out" in msg_lower
     ):
         logger.warning(f"LLM APIタイムアウト: 応答時間超過 - {exception_type}")
         return (
@@ -93,8 +96,8 @@ def handle_gemini_exception(exception):
 
     if (
         "PermissionDenied" in exception_type
-        or "PermissionDenied" in exception_message
-        or "permission denied" in exception_message.lower()
+        or "permission denied" in msg_lower
+        or "access denied" in msg_lower
     ):
         logger.warning(
             f"LLM API権限エラー: アクセス権限がありません - {exception_type}"
@@ -105,7 +108,7 @@ def handle_gemini_exception(exception):
             "APIへのアクセス権限がありません。APIキーの権限設定を確認してください。",
         )
 
-    if "blocked" in exception_message.lower() or "safety" in exception_message.lower():
+    if "blocked" in msg_lower or "safety" in msg_lower:
         logger.info(
             f"LLM APIコンテンツフィルター: 応答がブロックされました - {exception_type}"
         )
