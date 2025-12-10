@@ -71,6 +71,7 @@ Discord AIエージェントBotを起動するワークフローです。最新�
 - `DISCORD_TOKEN`: Discord Botのトークン
 - `TARGET_GUILD_ID`: 対象のサーバーID
 - `ENCRYPTION_KEY`: 復号化に使用する鍵（生成時と同じ鍵）
+- `GEMINI_API_KEY`: Google Gemini APIキー（応答生成に必須）
 
 #### 注意事項
 
@@ -223,7 +224,7 @@ Discord BotとGemini APIの認証情報（Secrets）の疎通を確認するワ�
 2. Gemini API疎通テスト（手動実行時のオプション）:
    - GEMINI_API_KEYの有効性を確認
    - Gemini APIへの接続を確認
-   - LLMモードが利用可能かを確認
+   - Gemini APIを使用した応答生成が利用可能かを確認
 
 #### 必要な環境変数
 
@@ -235,13 +236,13 @@ Discord BotとGemini APIの認証情報（Secrets）の疎通を確認するワ�
 
 - APIキーの設定ミスを早期に発見
 - 本番環境での実行前に疎通確認が可能
-- LLMモードの利用可否を事前に確認
+- Gemini APIを使用した応答生成の利用可否を事前に確認
 
 #### 注意事項
 
 - **自動実行時**: Discord疎通テストのみが実行されます。Gemini APIテストはスキップされます
 - **手動実行時**: オプションでGemini API疎通テストを有効化できます（無料枠を消費します）
-- GEMINI_API_KEYはオプションです。設定されていない場合でもテストは成功し、標準モード（ペルソナベース）で動作します
+- GEMINI_API_KEYが設定されていない場合、テストはスキップされます
 - 詳細情報表示オプションを有効にすると、Bot名やサーバー名がGitHub Actions Step Summaryに表示されます（リポジトリのActions権限を持つユーザーが閲覧可能）
 - Gemini APIのテストでは最小限のトークン数でAPIリクエストを送信します（無料枠への影響を最小化）
 

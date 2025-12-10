@@ -154,6 +154,7 @@ jobs:
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PYTHONUNBUFFERED: ${{ github.event.inputs.debug_mode == 'true' && '1' || '0' }}
         run: |
           echo "🤖 Discord Botを起動します"
@@ -209,7 +210,7 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Gemini APIモデルの更新が必要です**" >> $GITHUB_STEP_SUMMARY
             echo "- 現在のモデルが利用できない可能性があります" >> $GITHUB_STEP_SUMMARY
-            echo "- LLMモードが正常に動作しない可能性があります" >> $GITHUB_STEP_SUMMARY
+            echo "- Gemini APIを使用した応答生成が正常に動作しない可能性があります" >> $GITHUB_STEP_SUMMARY
             echo "- 詳細は上記のログ「Gemini APIモデルの有効性を確認」を参照してください" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
