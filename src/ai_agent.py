@@ -166,34 +166,23 @@ def _load_prompts():
 
     Returns:
         dict: プロンプト設定
+
+    Raises:
+        FileNotFoundError: prompts.yamlが存在しない場合
     """
     global _prompts
     if _prompts is None:
         prompts_path = os.path.abspath(PROMPTS_PATH)
-        if os.path.exists(prompts_path):
-            import yaml
+        if not os.path.exists(prompts_path):
+            raise FileNotFoundError(
+                f"プロンプト設定ファイルが見つかりません: {prompts_path}\n"
+                "config/prompts.yamlを配置してください。"
+            )
 
-            with open(prompts_path, "r", encoding="utf-8") as f:
-                _prompts = yaml.safe_load(f)
-        else:
-            # デフォルト値（prompts.yamlが存在しない場合）
-            # 注: 本番環境ではprompts.yamlを使用することを推奨
-            _prompts = {
-                "llm_system_prompt": "あなたは過去のDiscordメッセージから学習した"
-                "AIアドバイザーです。\n以下の過去メッセージを参考に、"
-                "ユーザーの質問に対して有益なアドバイスを提供してください。\n\n"
-                "【アドバイザーとしての役割】\n"
-                "- 具体的で実践的なアドバイスを提供する\n"
-                "- 単に情報を引用するだけでなく、ユーザーの状況を考慮した助言を行う\n"
-                "- 複数の選択肢や視点を提示する\n"
-                "- 注意点やベストプラクティスも含めて説明する",
-                "llm_response_instruction": "過去メッセージから得られた知識を活用し、"
-                "アドバイザーとして具体的で実践的なアドバイスを提供してください。"
-                "複数の選択肢や視点がある場合は、それらを提示してください。",
-                "llm_context_header": "【過去メッセージ】",
-                "llm_query_header": "【ユーザーの質問】",
-                "llm_response_header": "【回答】",
-            }
+        import yaml
+
+        with open(prompts_path, "r", encoding="utf-8") as f:
+            _prompts = yaml.safe_load(f)
     return _prompts
 
 
