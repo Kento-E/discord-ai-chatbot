@@ -169,6 +169,7 @@ def _load_prompts():
 
     Raises:
         FileNotFoundError: prompts.yamlが存在しない場合
+        RuntimeError: YAML構文エラーがある場合
     """
     global _prompts
     if _prompts is None:
@@ -181,8 +182,14 @@ def _load_prompts():
 
         import yaml
 
-        with open(prompts_path, "r", encoding="utf-8") as f:
-            _prompts = yaml.safe_load(f)
+        try:
+            with open(prompts_path, "r", encoding="utf-8") as f:
+                _prompts = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise RuntimeError(
+                f"プロンプト設定ファイル（{prompts_path}）のYAML構文に誤りがあります。\n"
+                f"エラー内容: {e}"
+            ) from e
     return _prompts
 
 
