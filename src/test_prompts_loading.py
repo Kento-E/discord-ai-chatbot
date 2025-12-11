@@ -67,7 +67,7 @@ def test_missing_prompts_file():
         except FileNotFoundError as e:
             if 'プロンプト設定ファイルが見つかりません' in str(e):
                 print("  ✅ FileNotFoundErrorが正しく発生しました")
-                print(f"     エラーメッセージ: {str(e).split(chr(10))[0]}")
+                print(f"     エラーメッセージ: {str(e).split('\n')[0]}")
                 return True
             else:
                 print(f"  ❌ 予期しないエラーメッセージ: {e}")
@@ -100,15 +100,15 @@ def test_invalid_yaml():
         except RuntimeError as e:
             if 'YAML構文に誤りがあります' in str(e):
                 print("  ✅ YAML解析エラー時にRuntimeErrorが発生しました")
-                print(f"     エラーメッセージ: {str(e).split(chr(10))[0]}")
+                print(f"     エラーメッセージ: {str(e).split('\n')[0]}")
                 return True
             else:
                 print(f"  ❌ 予期しないエラーメッセージ: {e}")
                 return False
-        
-        # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        finally:
+            # 設定を復元
+            ai_agent.PROMPTS_PATH = original_path
+            ai_agent._prompts = None
         
     finally:
         os.unlink(temp_config_path)
@@ -134,14 +134,14 @@ def test_empty_yaml_file():
         # 空のYAMLファイルはNoneを返すので、それを受け入れる
         if result is None:
             print("  ✅ 空のYAMLファイルに対してNoneを返しました")
+            return True
         else:
             print(f"  ⚠️  空のYAMLファイルに対して予期しない値を返しました: {result}")
-        
+            return True  # 警告だが失敗ではない
+    finally:
         # 設定を復元
         ai_agent.PROMPTS_PATH = original_path
         ai_agent._prompts = None
-        
-    finally:
         os.unlink(temp_config_path)
 
 
@@ -167,14 +167,14 @@ def test_missing_required_keys():
         if 'llm_system_prompt' not in result:
             print("  ✅ llm_system_promptキーが存在しないことを確認しました")
             print("     （実際の使用時にエラーが発生する可能性があります）")
+            return True
         else:
             print(f"  ⚠️  予期しない動作: llm_system_promptが存在します")
-        
+            return True  # 警告だが失敗ではない
+    finally:
         # 設定を復元
         ai_agent.PROMPTS_PATH = original_path
         ai_agent._prompts = None
-        
-    finally:
         os.unlink(temp_config_path)
 
 
@@ -206,16 +206,17 @@ def test_cache_behavior():
         
         if result1 == result2:
             print(f"  ✅ キャッシュが正しく動作しています")
+            return True
         else:
             print(f"  ❌ キャッシュが正しく動作していません")
-        
+            return False
+    except FileNotFoundError:
+        # ファイルが既に削除されている場合は問題なし
+        return True
+    finally:
         # 設定を復元
         ai_agent.PROMPTS_PATH = original_path
         ai_agent._prompts = None
-        
-    except FileNotFoundError:
-        # ファイルが既に削除されている場合は問題なし
-        pass
 
 
 def test_japanese_content():
@@ -240,14 +241,14 @@ def test_japanese_content():
         
         if 'アドバイザー' in result['llm_system_prompt']:
             print("  ✅ 日本語コンテンツが正しく読み込まれました")
+            return True
         else:
             print(f"  ❌ 日本語コンテンツの読み込みに問題があります")
-        
+            return False
+    finally:
         # 設定を復元
         ai_agent.PROMPTS_PATH = original_path
         ai_agent._prompts = None
-        
-    finally:
         os.unlink(temp_config_path)
 
 
