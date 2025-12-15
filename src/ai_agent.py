@@ -29,6 +29,8 @@ _texts = None
 _embeddings = None
 _prompts = None
 _gemini_model = None  # Gemini APIモデルのキャッシュ
+_gemini_module = None  # genaiモジュールのキャッシュ
+_safety_settings = None  # 安全性設定のキャッシュ
 _llm_first_success = False  # LLM初回成功フラグ
 _initialized = False
 _init_lock = threading.Lock()
@@ -225,15 +227,16 @@ def generate_response_with_llm(query, similar_messages):
         return None, None
 
     # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
+    global _gemini_module, _safety_settings
     if _gemini_model is None:
         # Gemini APIモデルを作成
-        genai, _gemini_model, safety_settings = create_generative_model(api_key)
-    else:
-        # キャッシュされたモデルを使用する場合もgenaiと設定が必要
-        import google.generativeai as genai
-        from gemini_config import get_safety_settings
+        _gemini_module, _gemini_model, _safety_settings = create_generative_model(
+            api_key
+        )
 
-        safety_settings = get_safety_settings(genai)
+    # キャッシュから取得
+    genai = _gemini_module
+    safety_settings = _safety_settings
 
     # 文脈として過去メッセージを整形
     context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
