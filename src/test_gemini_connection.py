@@ -106,9 +106,10 @@ def test_gemini_api_key():
             print()
             print("   ℹ️ 利用可能なモデルを確認しています...")
             try:
-                # genaiモジュールを再作成（エラーで破棄された可能性があるため）
-                genai_for_list, _, _ = create_generative_model(api_key)
+                # genaiモジュールをAPIキーで直接設定してモデル一覧を取得
+                import google.generativeai as genai_for_list
 
+                genai_for_list.configure(api_key=api_key)
                 available_models = list_available_models(genai_for_list)
                 if available_models:
                     print_available_models(available_models, max_display=5)
