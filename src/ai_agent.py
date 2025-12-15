@@ -198,9 +198,9 @@ def _load_prompts():
 
         # 環境変数から追加の役割指定を読み込む
         additional_role = os.environ.get("ADDITIONAL_AGENT_ROLE", "").strip()
-        if additional_role:
+        if additional_role and _prompts:
             # システムプロンプトに追加の役割を統合
-            if _prompts and "llm_system_prompt" in _prompts:
+            if "llm_system_prompt" in _prompts:
                 _prompts["llm_system_prompt"] = (
                     f"{_prompts['llm_system_prompt']}\n\n"
                     f"【追加の役割・性格】\n{additional_role}"
