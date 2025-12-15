@@ -66,8 +66,7 @@ def get_safety_settings(genai):
     """
     Gemini API用の安全性フィルター設定を取得する
 
-    クローズドなDiscordサーバー向けに、すべてのカテゴリで
-    安全性フィルターを無効化（BLOCK_NONE）した設定を返します。
+    すべてのカテゴリで安全性フィルターを無効化（BLOCK_NONE）した設定を返します。
 
     Args:
         genai: google.generativeai モジュール

@@ -230,7 +230,7 @@ def generate_response_with_llm(query, similar_messages):
     # APIの設定
     genai.configure(api_key=api_key)
 
-    # 安全性フィルター設定（クローズドサーバー向けに緩和）
+    # 安全性フィルター設定を取得
     safety_settings = get_safety_settings(genai)
 
     # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）

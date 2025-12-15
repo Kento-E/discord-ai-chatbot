@@ -50,7 +50,7 @@ def test_gemini_api_key():
         # モデルを初期化（設定ファイルから取得）
         model_name = get_model_name()
 
-        # 安全性フィルター設定（クローズドサーバー向けに緩和）
+        # 安全性フィルター設定を取得
         safety_settings = get_safety_settings(genai)
 
         model = genai.GenerativeModel(model_name, safety_settings=safety_settings)
