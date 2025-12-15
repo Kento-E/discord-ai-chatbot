@@ -31,7 +31,7 @@ def validate_model(model_name=None):
     # モデル名が指定されていない場合は設定ファイルから取得
     if model_name is None:
         model_name = get_model_name()
-    
+
     api_key = os.environ.get("GEMINI_API_KEY")
 
     # APIキーが設定されていない場合はスキップ
@@ -52,7 +52,11 @@ def validate_model(model_name=None):
         available_models = list_available_models(genai)
 
         # models/ プレフィックスを考慮してチェック
-        full_model_name = f"models/{model_name}" if not model_name.startswith("models/") else model_name
+        full_model_name = (
+            f"models/{model_name}"
+            if not model_name.startswith("models/")
+            else model_name
+        )
         simple_model_name = model_name.replace("models/", "")
 
         if full_model_name in available_models:

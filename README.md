@@ -131,6 +131,7 @@ GitHub Actions上でDiscord Botを実行できます。
    - `TARGET_GUILD_ID`: 取得対象のサーバーID
    - `ENCRYPTION_KEY`: 知識データの暗号化/復号化に使用する鍵（詳細: [.github/workflows/ENCRYPTION_KEY_SETUP.md](.github/workflows/ENCRYPTION_KEY_SETUP.md)）
    - `GEMINI_API_KEY`（オプション）: [LLM API統合ガイド](docs/LLM_API_SETUP.md)を参照
+   - `ADDITIONAL_AGENT_ROLE`（オプション）: エージェントに追加したい役割や性格の指定。設定ファイルのベースプロンプトに加えて適用されます
 
 #### 2. 知識データの生成
 

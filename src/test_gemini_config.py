@@ -8,6 +8,7 @@ get_model_name() 関数のエラーハンドリングとフォールバック機
 import os
 import sys
 import tempfile
+
 import yaml
 
 
@@ -225,6 +226,7 @@ def test_safety_settings():
     try:
         # google.generativeaiをインポート
         import google.generativeai as genai
+
         from gemini_config import get_safety_settings
 
         # 安全性フィルター設定を取得

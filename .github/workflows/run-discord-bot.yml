@@ -155,6 +155,7 @@ jobs:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ADDITIONAL_AGENT_ROLE: ${{ secrets.ADDITIONAL_AGENT_ROLE }}
           PYTHONUNBUFFERED: ${{ github.event.inputs.debug_mode == 'true' && '1' || '0' }}
         run: |
           echo "🤖 Discord Botを起動します"

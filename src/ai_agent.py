@@ -166,6 +166,9 @@ def _load_prompts():
     """
     プロンプト設定をファイルから読み込む（キャッシュあり）
 
+    環境変数 ADDITIONAL_AGENT_ROLE が設定されている場合、
+    その内容をシステムプロンプトに追加します。
+
     Returns:
         dict: プロンプト設定
 
@@ -192,6 +195,17 @@ def _load_prompts():
                 f"プロンプト設定ファイル（{prompts_path}）のYAML構文に誤りがあります。\n"
                 f"エラー内容: {e}"
             ) from e
+
+        # 環境変数から追加の役割指定を読み込む
+        additional_role = os.environ.get("ADDITIONAL_AGENT_ROLE", "").strip()
+        if additional_role:
+            # システムプロンプトに追加の役割を統合
+            if _prompts and "llm_system_prompt" in _prompts:
+                _prompts["llm_system_prompt"] = (
+                    f"{_prompts['llm_system_prompt']}\n\n"
+                    f"【追加の役割・性格】\n{additional_role}"
+                )
+                print("✅ 追加の役割設定が適用されました")
     return _prompts
 
 

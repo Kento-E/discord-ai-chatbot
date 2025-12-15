@@ -7,8 +7,8 @@ Gemini APIモデル設定を読み込むモジュール
 """
 
 import os
-import yaml
 
+import yaml
 
 # デフォルトのモデル名（設定ファイルが読み込めない場合のフォールバック）
 DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
