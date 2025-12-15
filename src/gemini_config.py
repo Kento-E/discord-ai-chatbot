@@ -84,5 +84,35 @@ def get_safety_settings(genai):
     }
 
 
+def create_generative_model(api_key):
+    """
+    Gemini APIモデルを作成する
+
+    APIキーを使用してgenaiを設定し、安全性フィルター設定を適用した
+    GenerativeModelインスタンスを作成して返します。
+
+    Args:
+        api_key: Gemini APIキー
+
+    Returns:
+        tuple: (genai, model, safety_settings)
+            - genai: google.generativeai モジュール
+            - model: GenerativeModel インスタンス
+            - safety_settings: 安全性フィルター設定の辞書
+    """
+    import google.generativeai as genai
+
+    # APIキーを設定
+    genai.configure(api_key=api_key)
+
+    # 安全性フィルター設定を取得
+    safety_settings = get_safety_settings(genai)
+
+    # モデルを作成
+    model = genai.GenerativeModel(get_model_name(), safety_settings=safety_settings)
+
+    return genai, model, safety_settings
+
+
 if __name__ == "__main__":
     print(f"現在のGemini APIモデル: {get_model_name()}")

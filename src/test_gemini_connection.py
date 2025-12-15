@@ -8,7 +8,7 @@ GEMINI_API_KEYの有効性を検証します。
 import os
 import sys
 
-from gemini_config import get_model_name, get_safety_settings
+from gemini_config import create_generative_model
 from gemini_model_utils import (
     list_available_models,
     print_available_models,
@@ -41,19 +41,8 @@ def test_gemini_api_key():
     print("🔄 Gemini APIへの接続を試みています...")
 
     try:
-        # google-generativeaiライブラリをインポート
-        import google.generativeai as genai
-
-        # APIキーを設定
-        genai.configure(api_key=api_key)
-
-        # モデルを初期化（設定ファイルから取得）
-        model_name = get_model_name()
-
-        # 安全性フィルター設定を取得
-        safety_settings = get_safety_settings(genai)
-
-        model = genai.GenerativeModel(model_name, safety_settings=safety_settings)
+        # Gemini APIモデルを作成
+        genai, model, safety_settings = create_generative_model(api_key)
 
         # 簡単なテストメッセージを送信
         print("🧪 テストメッセージを送信しています...")
@@ -110,12 +99,18 @@ def test_gemini_api_key():
             print("   対処: APIキーの権限を確認してください")
 
         elif "not found" in error_message.lower() or "404" in error_message:
+            from gemini_config import get_model_name
+
             print("   原因: 指定されたモデルが見つかりません")
-            print(f"   使用しようとしたモデル: {model_name}")
+            print(f"   使用しようとしたモデル: {get_model_name()}")
             print()
             print("   ℹ️ 利用可能なモデルを確認しています...")
             try:
-                available_models = list_available_models(genai)
+                # genaiモジュールが必要なので取得を試みる
+                import google.generativeai as genai_module
+
+                genai_module.configure(api_key=api_key)
+                available_models = list_available_models(genai_module)
                 if available_models:
                     print_available_models(available_models, max_display=5)
                     print_update_instructions()

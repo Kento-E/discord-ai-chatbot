@@ -259,6 +259,37 @@ def test_safety_settings():
         print("  ⚠️  google-generativeai がインストールされていないため、スキップします")
 
 
+def test_create_generative_model():
+    """Gemini APIモデル作成のテスト"""
+    print("\n[テスト8] Gemini APIモデル作成")
+
+    # 環境変数からAPIキーを取得
+    api_key = os.environ.get("GEMINI_API_KEY")
+
+    if not api_key or not api_key.strip():
+        print("  ⚠️  GEMINI_API_KEY が設定されていないため、スキップします")
+        return
+
+    try:
+        from gemini_config import create_generative_model
+
+        # モデルを作成
+        genai, model, safety_settings = create_generative_model(api_key)
+
+        # 返り値の型を確認
+        assert genai is not None, "genaiモジュールがNoneです"
+        assert model is not None, "モデルがNoneです"
+        assert isinstance(safety_settings, dict), "安全性設定が辞書ではありません"
+
+        print("  ✅ Gemini APIモデルが正しく作成されました")
+        print(f"     安全性設定のカテゴリ数: {len(safety_settings)}")
+
+    except ImportError:
+        print("  ⚠️  google-generativeai がインストールされていないため、スキップします")
+    except Exception as e:
+        print(f"  ⚠️  テスト実行中にエラーが発生: {e}")
+
+
 def main():
     """すべてのテストを実行"""
     print("=" * 60)
@@ -273,6 +304,7 @@ def main():
         test_missing_model_name_key,
         test_cache_behavior,
         test_safety_settings,
+        test_create_generative_model,
     ]
 
     passed = 0

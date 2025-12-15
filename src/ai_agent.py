@@ -18,7 +18,7 @@ import json
 import os
 import threading
 
-from gemini_config import get_model_name, get_safety_settings
+from gemini_config import create_generative_model
 
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.yaml")
@@ -224,20 +224,16 @@ def generate_response_with_llm(query, similar_messages):
         # (起動時に既に案内済み)
         return None, None
 
-    # google.generativeaiを遅延インポート（API使用時のみ）
-    import google.generativeai as genai
-
-    # APIの設定
-    genai.configure(api_key=api_key)
-
-    # 安全性フィルター設定を取得
-    safety_settings = get_safety_settings(genai)
-
     # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
     if _gemini_model is None:
-        _gemini_model = genai.GenerativeModel(
-            get_model_name(), safety_settings=safety_settings
-        )
+        # Gemini APIモデルを作成
+        genai, _gemini_model, safety_settings = create_generative_model(api_key)
+    else:
+        # キャッシュされたモデルを使用する場合もgenaiと設定が必要
+        import google.generativeai as genai
+        from gemini_config import get_safety_settings
+
+        safety_settings = get_safety_settings(genai)
 
     # 文脈として過去メッセージを整形
     context = "\n".join([f"- {msg}" for msg in similar_messages[:5]])
