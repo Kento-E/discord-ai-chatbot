@@ -8,7 +8,7 @@ GEMINI_API_KEYの有効性を検証します。
 import os
 import sys
 
-from gemini_config import get_model_name
+from gemini_config import get_model_name, get_safety_settings
 from gemini_model_utils import (
     list_available_models,
     print_available_models,
@@ -51,14 +51,7 @@ def test_gemini_api_key():
         model_name = get_model_name()
 
         # 安全性フィルター設定（クローズドサーバー向けに緩和）
-        HarmCategory = genai.types.HarmCategory
-        HarmBlockThreshold = genai.types.HarmBlockThreshold
-        safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-        }
+        safety_settings = get_safety_settings(genai)
 
         model = genai.GenerativeModel(model_name, safety_settings=safety_settings)
 

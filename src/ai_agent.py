@@ -18,7 +18,7 @@ import json
 import os
 import threading
 
-from gemini_config import get_model_name
+from gemini_config import get_model_name, get_safety_settings
 
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.yaml")
@@ -231,14 +231,7 @@ def generate_response_with_llm(query, similar_messages):
     genai.configure(api_key=api_key)
 
     # 安全性フィルター設定（クローズドサーバー向けに緩和）
-    HarmCategory = genai.types.HarmCategory
-    HarmBlockThreshold = genai.types.HarmBlockThreshold
-    safety_settings = {
-        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-    }
+    safety_settings = get_safety_settings(genai)
 
     # モデルのインスタンスをキャッシュして再利用（パフォーマンス向上）
     if _gemini_model is None:
