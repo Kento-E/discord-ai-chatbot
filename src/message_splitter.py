@@ -55,12 +55,12 @@ def split_message(message, max_length=DISCORD_MAX_LENGTH):
 
         # 改行位置で分割を試みる
         last_newline = chunk.rfind("\n")
-        if last_newline > 0:  # 0より大きい位置で改行が見つかった場合
+        if last_newline >= 0:
             split_pos = last_newline + 1  # 改行文字を含める
         else:
             # 改行がない場合、句点で分割を試みる
             last_period = max(chunk.rfind("。"), chunk.rfind("！"), chunk.rfind("？"))
-            if last_period > 0:
+            if last_period >= 0:
                 split_pos = last_period + 1  # 句点を含める
             # それでも見つからない場合は、最大長で強制分割
 
