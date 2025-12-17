@@ -122,7 +122,12 @@ async def on_message(message):
                     if loading_msg:
                         await loading_msg.delete()
 
-                await message.channel.send(response)
+                # メッセージを分割して送信（Discord 2000文字制限対応）
+                from message_splitter import split_message
+
+                message_chunks = split_message(response)
+                for chunk in message_chunks:
+                    await message.channel.send(chunk)
             except ValueError as e:
                 # APIキー未設定または類似メッセージ未検出
                 await message.channel.send(f"⚠️ 設定エラー: {str(e)}")
