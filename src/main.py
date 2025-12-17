@@ -122,6 +122,11 @@ async def on_message(message):
                     if loading_msg:
                         await loading_msg.delete()
 
+                # Discord の 2000 文字制限チェック
+                if len(response) > 2000:
+                    # 2000文字を超える場合は切り詰めて警告を追加
+                    response = response[:1950] + "\n\n...（応答が長すぎるため省略されました）"
+
                 await message.channel.send(response)
             except ValueError as e:
                 # APIキー未設定または類似メッセージ未検出
