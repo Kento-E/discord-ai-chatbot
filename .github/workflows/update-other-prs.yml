@@ -40,7 +40,7 @@ jobs:
             echo "✅ PR #${MERGED_PR_NUMBER} がマージされました"
             echo "🔍 ベースブランチ '${BASE_BRANCH}' を対象とする他のオープンなPRを検索中..."
             # 同じベースブランチを持つオープンなPRを取得（マージされたPRを除外）
-            OTHER_PRS=$(gh pr list --base "${BASE_BRANCH}" --state open --json number,headRefName,title --jq --arg merged_pr "$MERGED_PR_NUMBER" '.[] | select(.number != ($merged_pr | tonumber)) | .number')
+            OTHER_PRS=$(gh pr list --base "${BASE_BRANCH}" --state open --json number,headRefName,title --jq ".[] | select(.number != ${MERGED_PR_NUMBER}) | .number")
           fi
           
           if [ -z "$OTHER_PRS" ]; then
