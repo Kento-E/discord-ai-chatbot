@@ -249,7 +249,7 @@ def test_japanese_content():
     ) as f:
         yaml.dump(
             {
-                "llm_system_prompt": "あなたは過去のDiscordメッセージから学習したAIアドバイザーです。",
+                "llm_system_prompt": "あなたは過去のDiscordメッセージから学習した専門AIアシスタントです。",
                 "llm_response_instruction": "具体的で実践的なアドバイスを提供してください。",
             },
             f,
@@ -266,7 +266,7 @@ def test_japanese_content():
 
         result = ai_agent._load_prompts()
 
-        if "アドバイザー" in result["llm_system_prompt"]:
+        if "専門AIアシスタント" in result["llm_system_prompt"]:
             print("  ✅ 日本語コンテンツが正しく読み込まれました")
             return True
         else:
