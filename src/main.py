@@ -3,8 +3,6 @@ import os
 import discord
 from discord import app_commands
 
-from message_splitter import split_message
-
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 
 # 環境変数から機密情報を読み取る
@@ -124,24 +122,20 @@ async def on_message(message):
                     if loading_msg:
                         await loading_msg.delete()
 
-                # メッセージを分割して送信
-                message_chunks = split_message(response)
-                for chunk in message_chunks:
-                    await message.channel.send(chunk)
+                # Discord の 2000 文字制限チェック
+                if len(response) > 2000:
+                    # 2000文字を超える場合は切り詰めて警告を追加
+                    response = response[:1950] + "\n\n...（応答が長すぎるため省略されました）"
+
+                await message.channel.send(response)
             except ValueError as e:
                 # APIキー未設定または類似メッセージ未検出
-                error_chunks = split_message(f"⚠️ 設定エラー: {str(e)}")
-                for chunk in error_chunks:
-                    await message.channel.send(chunk)
+                await message.channel.send(f"⚠️ 設定エラー: {str(e)}")
             except RuntimeError as e:
                 # LLM API応答取得失敗
-                error_chunks = split_message(f"⚠️ APIエラー: {str(e)}")
-                for chunk in error_chunks:
-                    await message.channel.send(chunk)
+                await message.channel.send(f"⚠️ APIエラー: {str(e)}")
             except Exception as e:
-                error_chunks = split_message(f"⚠️ エラーが発生しました: {str(e)}")
-                for chunk in error_chunks:
-                    await message.channel.send(chunk)
+                await message.channel.send(f"⚠️ エラーが発生しました: {str(e)}")
         else:
             help_msg = (
                 "知識データが未生成です。まずメッセージ取得・整形を行ってください。\n"
@@ -153,9 +147,7 @@ async def on_message(message):
                 "\n"
                 "詳細は docs/USAGE.md またはREADMEをご覧ください。"
             )
-            help_chunks = split_message(help_msg)
-            for chunk in help_chunks:
-                await message.channel.send(chunk)
+            await message.channel.send(help_msg)
 
 
 if __name__ == "__main__":
