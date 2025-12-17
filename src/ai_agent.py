@@ -297,7 +297,7 @@ def generate_response_with_llm(query, similar_messages):
                 prompt,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
-                    max_output_tokens=300,
+                    max_output_tokens=450,
                 ),
                 safety_settings=safety_settings,
                 request_options={"timeout": 30},
