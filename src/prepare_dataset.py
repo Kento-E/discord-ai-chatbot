@@ -54,7 +54,7 @@ def main():
         message_ids = [msg["id"] for msg in messages if msg["content"].strip()]
 
     else:
-        print("📊 データベースモード: JSON（後方互換）")
+        print("📊 JSONモード（後方互換）")
         print()
 
         if not os.path.exists(DATA_PATH):

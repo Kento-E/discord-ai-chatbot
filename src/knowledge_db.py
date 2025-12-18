@@ -7,6 +7,7 @@ SQLiteを使用して知識データを管理します。
 - メタデータ管理（カテゴリ、重要度など）
 """
 
+import json
 import os
 import sqlite3
 from datetime import datetime
@@ -254,8 +255,6 @@ class KnowledgeDB:
         Returns:
             bool: 新規挿入された場合True、既存でスキップされた場合False
         """
-        import json
-
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
 
@@ -293,8 +292,6 @@ class KnowledgeDB:
         Returns:
             Tuple[List[str], List[List[float]]]: (テキストリスト, 埋め込みリスト)
         """
-        import json
-
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
