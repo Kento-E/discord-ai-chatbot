@@ -10,7 +10,6 @@ SQLiteを使用して知識データを管理します。
 import json
 import os
 import sqlite3
-from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 
