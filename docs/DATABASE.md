@@ -8,7 +8,7 @@
 
 ### 1. 上限なしのメッセージ蓄積
 
-従来のJSON方式では各チャンネルから最大10,000メッセージまでという制限がありましたが、データベース方式では制限がありません。
+データベース方式では、メッセージの蓄積に上限がありません。
 
 - **利点**: 古いメッセージも含めて全履歴を保持
 - **実装**: SQLiteファイルベースのデータベース
@@ -221,24 +221,7 @@ texts, embeddings = db.get_all_embeddings(category="technical")
 
 ## 後方互換性
 
-### JSON形式のサポート
-
-既存のJSON形式（`messages.json`, `embeddings.json`）もサポートしています。
-
-#### JSON形式を使用する場合
-
-環境変数を設定：
-
-```bash
-export USE_JSON_FALLBACK=true
-python src/fetch_messages.py
-python src/prepare_dataset.py
-```
-
-#### 自動切り替え
-
-- `data/knowledge.db`が存在する場合: データベースモード
-- `data/knowledge.db`が存在しない場合: JSONモード（後方互換）
+現在は後方互換性のためJSON形式もサポートしていますが、将来的に削除予定です。新規利用者はデータベース形式の使用を推奨します。
 
 ## GitHub Actionsでの利用
 
