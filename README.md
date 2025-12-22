@@ -7,6 +7,7 @@ LLM（Google Gemini API）を使用して、過去のメッセージを文脈と
 ## 機能概要
 
 - Discord APIを使ったメッセージ取得
+- データベースによる知識データ管理
 - 取得メッセージのAI学習データ化
 - **LLM API（Google Gemini）による高度な応答生成**
   - Google Gemini API対応（無料枠で利用可能）
@@ -51,7 +52,7 @@ python src/fetch_messages.py
 
 - 指定されたDiscordサーバーの全テキストチャンネルからメッセージを取得
 - Botのメッセージを除外
-- 取得したメッセージを `data/messages.json` に保存
+- 取得したメッセージをデータベースに保存
 
 **注意事項**：
 
@@ -72,9 +73,9 @@ python src/prepare_dataset.py
 
 このスクリプトは以下を実行します：
 
-- `data/messages.json` から メッセージを読み込み
-- Sentence Transformerモデル（all-MiniLM-L6-v2）で埋め込みベクトルを生成
-- 埋め込みデータを `data/embeddings.json` に保存
+- メッセージデータから埋め込みベクトルを生成
+- Sentence Transformerモデル（all-MiniLM-L6-v2）を使用
+- 埋め込みデータをデータベースに保存
 
 **注意**: 初回実行時はモデルのダウンロードに時間がかかる場合があります。
 

@@ -124,7 +124,11 @@ jobs:
 
       - name: 知識データの確認
         run: |
-          if [ ! -f data/embeddings.json ]; then
+          if [ -f data/knowledge.db ]; then
+            echo "✅ 知識データが利用可能です（データベースモード）"
+          elif [ -f data/embeddings.json ]; then
+            echo "✅ 知識データが利用可能です（JSONモード）"
+          else
             echo "❌ エラー: 知識データが存在しません"
             echo ""
             echo "知識データを生成するには、以下のワークフローを実行してください:"
@@ -132,8 +136,6 @@ jobs:
             echo ""
             echo "詳細: .github/workflows/ENCRYPTION_KEY_SETUP.md を参照"
             exit 1
-          else
-            echo "✅ 知識データが利用可能です"
           fi
 
       - name: Gemini APIモデルの有効性を確認

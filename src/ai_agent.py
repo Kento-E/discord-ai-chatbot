@@ -19,9 +19,13 @@ import os
 import threading
 
 from gemini_config import create_generative_model
+from knowledge_db import KnowledgeDB
 
 EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
+DB_PATH = os.path.join(os.path.dirname(__file__), "../data/knowledge.db")
 PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.yaml")
+
+USE_JSON_FALLBACK = os.environ.get("USE_JSON_FALLBACK", "false").lower() == "true"
 
 # 遅延ロード用のグローバル変数（キャッシュ）
 _model = None
@@ -36,6 +40,8 @@ _llm_first_success = False  # LLM初回成功フラグ
 _initialized = False
 _init_lock = threading.Lock()
 _llm_success_lock = threading.Lock()  # LLM成功メッセージ表示用ロック
+# データベースインスタンス（クリーンアップはガベージコレクションを介して自動的に行われる）
+_db = None
 
 
 def is_initialized():
@@ -62,11 +68,11 @@ def ensure_initialized_with_callback(callback=None):
         bool: 既に初期化済みだった場合True、今回初めて初期化した場合False
 
     Raises:
-        FileNotFoundError: EMBED_PATHが存在しない場合
+        FileNotFoundError: EMBED_PATHまたはDB_PATHが存在しない場合
         json.JSONDecodeError: JSONファイルの解析に失敗した場合
         Exception: モデルのロードに失敗した場合
     """
-    global _model, _texts, _embeddings, _initialized
+    global _model, _texts, _embeddings, _initialized, _db
 
     # 既に初期化済み
     if _initialized:
@@ -89,18 +95,32 @@ def ensure_initialized_with_callback(callback=None):
             # モデルのロード
             _model = SentenceTransformer("all-MiniLM-L6-v2")
 
-            # 埋め込みデータのロード
-            if not os.path.exists(EMBED_PATH):
-                raise FileNotFoundError(
-                    f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
-                    "prepare_dataset.pyを実行してデータを生成してください。"
-                )
+            # データベースまたはJSONからデータをロード
+            use_db = os.path.exists(DB_PATH) and not USE_JSON_FALLBACK
 
-            with open(EMBED_PATH, "r") as f:
-                dataset = json.load(f)
+            if use_db:
+                # データベースモード
+                _db = KnowledgeDB(DB_PATH)
+                _texts, _embeddings = _db.get_all_embeddings()
 
-            _texts = [item["text"] for item in dataset]
-            _embeddings = [item["embedding"] for item in dataset]
+                if not _texts:
+                    raise FileNotFoundError(
+                        f"埋め込みデータが見つかりません: {DB_PATH}\n"
+                        "prepare_dataset.pyを実行してデータを生成してください。"
+                    )
+            else:
+                # JSONモード（後方互換）
+                if not os.path.exists(EMBED_PATH):
+                    raise FileNotFoundError(
+                        f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
+                        "prepare_dataset.pyを実行してデータを生成してください。"
+                    )
+
+                with open(EMBED_PATH, "r") as f:
+                    dataset = json.load(f)
+
+                _texts = [item["text"] for item in dataset]
+                _embeddings = [item["embedding"] for item in dataset]
 
             _initialized = True
             return False  # 初回初期化完了
@@ -118,11 +138,11 @@ def _ensure_initialized():
     ダブルチェックロッキングパターンを使用して、パフォーマンスを最適化しています。
 
     Raises:
-        FileNotFoundError: EMBED_PATHが存在しない場合
+        FileNotFoundError: EMBED_PATHまたはDB_PATHが存在しない場合
         json.JSONDecodeError: JSONファイルの解析に失敗した場合
         Exception: モデルのロードに失敗した場合
     """
-    global _model, _texts, _embeddings, _initialized
+    global _model, _texts, _embeddings, _initialized, _db
 
     # 初期チェック（ロックなし）- パフォーマンス最適化
     if _initialized:
@@ -141,18 +161,32 @@ def _ensure_initialized():
             # モデルのロード
             _model = SentenceTransformer("all-MiniLM-L6-v2")
 
-            # 埋め込みデータのロード
-            if not os.path.exists(EMBED_PATH):
-                raise FileNotFoundError(
-                    f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
-                    "prepare_dataset.pyを実行してデータを生成してください。"
-                )
+            # データベースまたはJSONからデータをロード
+            use_db = os.path.exists(DB_PATH) and not USE_JSON_FALLBACK
 
-            with open(EMBED_PATH, "r") as f:
-                dataset = json.load(f)
+            if use_db:
+                # データベースモード
+                _db = KnowledgeDB(DB_PATH)
+                _texts, _embeddings = _db.get_all_embeddings()
 
-            _texts = [item["text"] for item in dataset]
-            _embeddings = [item["embedding"] for item in dataset]
+                if not _texts:
+                    raise FileNotFoundError(
+                        f"埋め込みデータが見つかりません: {DB_PATH}\n"
+                        "prepare_dataset.pyを実行してデータを生成してください。"
+                    )
+            else:
+                # JSONモード（後方互換）
+                if not os.path.exists(EMBED_PATH):
+                    raise FileNotFoundError(
+                        f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
+                        "prepare_dataset.pyを実行してデータを生成してください。"
+                    )
+
+                with open(EMBED_PATH, "r") as f:
+                    dataset = json.load(f)
+
+                _texts = [item["text"] for item in dataset]
+                _embeddings = [item["embedding"] for item in dataset]
 
             _initialized = True
         except FileNotFoundError:

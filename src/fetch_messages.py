@@ -3,7 +3,8 @@
 Discord メッセージ取得スクリプト
 
 指定されたDiscordサーバーから過去のメッセージを取得し、
-data/messages.json に保存します。
+SQLiteデータベースに保存します。
+既存のメッセージはスキップされ、新規メッセージのみが追加されます（増分更新）。
 """
 
 import json
@@ -13,19 +14,23 @@ import traceback
 
 import discord
 
+from knowledge_db import KnowledgeDB
+
 # 環境変数から設定を読み取る
 TOKEN = os.environ.get("DISCORD_TOKEN")
 GUILD_ID_STR = os.environ.get("TARGET_GUILD_ID")
 EXCLUDED_CHANNELS_STR = os.environ.get(
     "EXCLUDED_CHANNELS", ""
 )  # カンマ区切りのチャンネル名
+USE_JSON_FALLBACK = os.environ.get("USE_JSON_FALLBACK", "false").lower() == "true"
 
 # データ保存先
 DATA_DIR = os.path.join(os.path.dirname(__file__), "../data")
 OUTPUT_PATH = os.path.join(DATA_DIR, "messages.json")
+DB_PATH = os.path.join(DATA_DIR, "knowledge.db")
 
-# デフォルト設定
-DEFAULT_MESSAGE_LIMIT = 10000  # 各チャンネルから取得する最大メッセージ数
+# デフォルト設定 - DB使用時は上限なし
+DEFAULT_MESSAGE_LIMIT = None  # Noneの場合は全メッセージを取得
 
 
 def validate_environment():
@@ -148,6 +153,18 @@ async def main():
     # dataディレクトリの準備
     ensure_data_directory()
 
+    # データベース初期化
+    db = None
+    if not USE_JSON_FALLBACK:
+        print("📊 データベースモード: SQLite（増分更新対応）")
+        db = KnowledgeDB(DB_PATH)
+        existing_count = db.get_message_count()
+        print(f"   既存メッセージ数: {existing_count}件")
+        print()
+    else:
+        print("📊 データベースモード: JSON（後方互換）")
+        print()
+
     # Discord Clientのセットアップ
     intents = discord.Intents.default()
     intents.guilds = True
@@ -190,11 +207,23 @@ async def main():
                 await client.close()
                 return
 
-            # メッセージをJSONファイルに保存
-            with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-                json.dump(messages, f, ensure_ascii=False, indent=2)
+            # データベースまたはJSONに保存
+            if db is not None:
+                # データベースに保存（増分更新）
+                print(f"💾 データベースに保存中...")
+                inserted, skipped = db.insert_messages_batch(messages)
+                print(f"   新規追加: {inserted}件")
+                print(f"   既存スキップ: {skipped}件")
+                total_count = db.get_message_count()
+                print(f"   累積総数: {total_count}件")
+                print()
+                print(f"✅ データベースへの保存が完了しました: {DB_PATH}")
+            else:
+                # JSONファイルに保存（後方互換）
+                with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+                    json.dump(messages, f, ensure_ascii=False, indent=2)
+                print(f"💾 メッセージを保存しました: {OUTPUT_PATH}")
 
-            print(f"💾 メッセージを保存しました: {OUTPUT_PATH}")
             print()
             print("=" * 60)
             print("✅ メッセージ取得が完了しました")

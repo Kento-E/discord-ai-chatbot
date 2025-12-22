@@ -28,6 +28,7 @@ wheels/
 
 # データファイル（機密情報を含む可能性があるため）
 data/*.json
+data/*.db
 # dataディレクトリ構造は保持
 !data/.gitkeep
 !data/.gitignore
