@@ -186,7 +186,7 @@ def test_missing_required_keys():
             print("     （実際の使用時にエラーが発生する可能性があります）")
             return True
         else:
-            print(f"  ⚠️  予期しない動作: llm_system_promptが存在します")
+            print("  ⚠️  予期しない動作: llm_system_promptが存在します")
             return True  # 警告だが失敗ではない
     finally:
         # 設定を復元
@@ -225,10 +225,10 @@ def test_cache_behavior():
         result2 = ai_chatbot._load_prompts()
 
         if result1 == result2:
-            print(f"  ✅ キャッシュが正しく動作しています")
+            print("  ✅ キャッシュが正しく動作しています")
             return True
         else:
-            print(f"  ❌ キャッシュが正しく動作していません")
+            print("  ❌ キャッシュが正しく動作していません")
             return False
     except FileNotFoundError:
         # ファイルが既に削除されている場合は問題なし
@@ -270,7 +270,7 @@ def test_japanese_content():
             print("  ✅ 日本語コンテンツが正しく読み込まれました")
             return True
         else:
-            print(f"  ❌ 日本語コンテンツの読み込みに問題があります")
+            print("  ❌ 日本語コンテンツの読み込みに問題があります")
             return False
     finally:
         # 設定を復元

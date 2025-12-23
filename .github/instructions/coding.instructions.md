@@ -31,6 +31,51 @@
 
 ## コード品質
 
+### リンター実行（必須）
+
+**コード変更後は必ずリンターを実行してコミットすること**
+
+コミット前に以下のいずれかの方法でリンターを実行し、すべてのエラーを修正してください：
+
+#### 方法1: Pre-commitフック（推奨）
+
+```bash
+# 初回のみセットアップ
+pre-commit install
+
+# 以降、git commitで自動実行される
+git add .
+git commit -m "メッセージ"
+```
+
+#### 方法2: 手動実行
+
+```bash
+# 全リンターをチェックのみ実行（修正なし）
+make check
+
+# 全リンターを実行して自動修正
+make format
+
+# 個別実行
+autoflake --check --recursive --remove-all-unused-imports --remove-unused-variables src/
+isort --check-only --profile black src/
+black --check src/
+flake8 src/
+```
+
+#### 方法3: pre-commitコマンド
+
+```bash
+# 全ファイルに対して実行
+pre-commit run --all-files
+
+# 変更したファイルのみ実行
+pre-commit run
+```
+
+**重要**: リンターエラーがある状態でコミットしないでください。CI/CDパイプラインで失敗します。
+
 ### 基本ルール
 
 - **未使用の変数・importは削除すること**
