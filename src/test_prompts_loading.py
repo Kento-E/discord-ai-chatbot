@@ -34,7 +34,7 @@ def test_normal_prompts_loading():
         temp_config_path = f.name
 
     try:
-        # ai_agentモジュールの設定パスを一時的に変更
+        # ai_chatbotモジュールの設定パスを一時的に変更
         import ai_chatbot
 
         original_path = ai_chatbot.PROMPTS_PATH

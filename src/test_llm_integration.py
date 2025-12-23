@@ -42,7 +42,7 @@ def test_llm_response_generation():
     test_query = "Pythonでファイルを読み込む方法を教えてください"
 
     try:
-        from ai_agent import generate_response_with_llm
+        from ai_chatbot import generate_response_with_llm
 
         response, error_message = generate_response_with_llm(
             test_query, test_similar_messages
@@ -91,7 +91,7 @@ def test_api_key_requirement():
             print("⚠ 埋め込みデータが存在しないため、スキップします")
             return True
 
-        from ai_agent import generate_response
+        from ai_chatbot import generate_response
 
         test_query = "テスト"
 
@@ -136,7 +136,7 @@ def test_integration_with_generate_response():
         return True
 
     try:
-        from ai_agent import generate_response
+        from ai_chatbot import generate_response
 
         test_query = "こんにちは"
         response = generate_response(test_query)
