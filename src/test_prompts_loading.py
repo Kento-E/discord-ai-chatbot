@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ai_agent.py の _load_prompts() 関数のユニットテスト
+ai_chatbot.py の _load_prompts() 関数のユニットテスト
 
 プロンプト設定ファイルの読み込み、エラーハンドリング、キャッシュ機能をテストします。
 """
@@ -35,13 +35,13 @@ def test_normal_prompts_loading():
 
     try:
         # ai_agentモジュールの設定パスを一時的に変更
-        import ai_agent
+        import ai_chatbot
 
-        original_path = ai_agent.PROMPTS_PATH
-        ai_agent.PROMPTS_PATH = temp_config_path
-        ai_agent._prompts = None  # キャッシュをクリア
+        original_path = ai_chatbot.PROMPTS_PATH
+        ai_chatbot.PROMPTS_PATH = temp_config_path
+        ai_chatbot._prompts = None  # キャッシュをクリア
 
-        result = ai_agent._load_prompts()
+        result = ai_chatbot._load_prompts()
 
         assert (
             result["llm_system_prompt"] == "テスト用システムプロンプト"
@@ -49,8 +49,8 @@ def test_normal_prompts_loading():
         print("  ✅ 正常に設定ファイルから読み込めました")
 
         # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        ai_chatbot.PROMPTS_PATH = original_path
+        ai_chatbot._prompts = None
 
     finally:
         os.unlink(temp_config_path)
@@ -60,16 +60,16 @@ def test_missing_prompts_file():
     """プロンプト設定ファイルが存在しない場合のエラーテスト"""
     print("\n[テスト2] プロンプト設定ファイルが存在しない場合のエラー")
 
-    import ai_agent
+    import ai_chatbot
 
     # 存在しないパスを設定
-    original_path = ai_agent.PROMPTS_PATH
-    ai_agent.PROMPTS_PATH = "/nonexistent/path/to/prompts.yaml"
-    ai_agent._prompts = None  # キャッシュをクリア
+    original_path = ai_chatbot.PROMPTS_PATH
+    ai_chatbot.PROMPTS_PATH = "/nonexistent/path/to/prompts.yaml"
+    ai_chatbot._prompts = None  # キャッシュをクリア
 
     try:
         try:
-            ai_agent._load_prompts()
+            ai_chatbot._load_prompts()
             print("  ❌ エラーが発生しませんでした（異常）")
             return False
         except FileNotFoundError as e:
@@ -82,8 +82,8 @@ def test_missing_prompts_file():
                 return False
     finally:
         # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        ai_chatbot.PROMPTS_PATH = original_path
+        ai_chatbot._prompts = None
 
 
 def test_invalid_yaml():
@@ -98,14 +98,14 @@ def test_invalid_yaml():
         temp_config_path = f.name
 
     try:
-        import ai_agent
+        import ai_chatbot
 
-        original_path = ai_agent.PROMPTS_PATH
-        ai_agent.PROMPTS_PATH = temp_config_path
-        ai_agent._prompts = None  # キャッシュをクリア
+        original_path = ai_chatbot.PROMPTS_PATH
+        ai_chatbot.PROMPTS_PATH = temp_config_path
+        ai_chatbot._prompts = None  # キャッシュをクリア
 
         try:
-            ai_agent._load_prompts()
+            ai_chatbot._load_prompts()
             print("  ❌ エラーが発生しませんでした（異常）")
             return False
         except RuntimeError as e:
@@ -118,8 +118,8 @@ def test_invalid_yaml():
                 return False
         finally:
             # 設定を復元
-            ai_agent.PROMPTS_PATH = original_path
-            ai_agent._prompts = None
+            ai_chatbot.PROMPTS_PATH = original_path
+            ai_chatbot._prompts = None
 
     finally:
         os.unlink(temp_config_path)
@@ -137,13 +137,13 @@ def test_empty_yaml_file():
         temp_config_path = f.name
 
     try:
-        import ai_agent
+        import ai_chatbot
 
-        original_path = ai_agent.PROMPTS_PATH
-        ai_agent.PROMPTS_PATH = temp_config_path
-        ai_agent._prompts = None  # キャッシュをクリア
+        original_path = ai_chatbot.PROMPTS_PATH
+        ai_chatbot.PROMPTS_PATH = temp_config_path
+        ai_chatbot._prompts = None  # キャッシュをクリア
 
-        result = ai_agent._load_prompts()
+        result = ai_chatbot._load_prompts()
 
         # 空のYAMLファイルはNoneを返すので、それを受け入れる
         if result is None:
@@ -154,8 +154,8 @@ def test_empty_yaml_file():
             return True  # 警告だが失敗ではない
     finally:
         # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        ai_chatbot.PROMPTS_PATH = original_path
+        ai_chatbot._prompts = None
         os.unlink(temp_config_path)
 
 
@@ -171,13 +171,13 @@ def test_missing_required_keys():
         temp_config_path = f.name
 
     try:
-        import ai_agent
+        import ai_chatbot
 
-        original_path = ai_agent.PROMPTS_PATH
-        ai_agent.PROMPTS_PATH = temp_config_path
-        ai_agent._prompts = None  # キャッシュをクリア
+        original_path = ai_chatbot.PROMPTS_PATH
+        ai_chatbot.PROMPTS_PATH = temp_config_path
+        ai_chatbot._prompts = None  # キャッシュをクリア
 
-        result = ai_agent._load_prompts()
+        result = ai_chatbot._load_prompts()
 
         # 必要なキーがない場合でも読み込みは成功するが、
         # 実際の使用時に問題が発生する可能性がある
@@ -190,8 +190,8 @@ def test_missing_required_keys():
             return True  # 警告だが失敗ではない
     finally:
         # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        ai_chatbot.PROMPTS_PATH = original_path
+        ai_chatbot._prompts = None
         os.unlink(temp_config_path)
 
 
@@ -209,20 +209,20 @@ def test_cache_behavior():
         temp_config_path = f.name
 
     try:
-        import ai_agent
+        import ai_chatbot
 
-        original_path = ai_agent.PROMPTS_PATH
-        ai_agent.PROMPTS_PATH = temp_config_path
-        ai_agent._prompts = None  # キャッシュをクリア
+        original_path = ai_chatbot.PROMPTS_PATH
+        ai_chatbot.PROMPTS_PATH = temp_config_path
+        ai_chatbot._prompts = None  # キャッシュをクリア
 
         # 1回目の呼び出し
-        result1 = ai_agent._load_prompts()
+        result1 = ai_chatbot._load_prompts()
 
         # ファイルを削除（キャッシュがあれば読み込みは発生しない）
         os.unlink(temp_config_path)
 
         # 2回目の呼び出し（キャッシュから取得）
-        result2 = ai_agent._load_prompts()
+        result2 = ai_chatbot._load_prompts()
 
         if result1 == result2:
             print(f"  ✅ キャッシュが正しく動作しています")
@@ -235,8 +235,8 @@ def test_cache_behavior():
         return True
     finally:
         # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        ai_chatbot.PROMPTS_PATH = original_path
+        ai_chatbot._prompts = None
 
 
 def test_japanese_content():
@@ -258,13 +258,13 @@ def test_japanese_content():
         temp_config_path = f.name
 
     try:
-        import ai_agent
+        import ai_chatbot
 
-        original_path = ai_agent.PROMPTS_PATH
-        ai_agent.PROMPTS_PATH = temp_config_path
-        ai_agent._prompts = None  # キャッシュをクリア
+        original_path = ai_chatbot.PROMPTS_PATH
+        ai_chatbot.PROMPTS_PATH = temp_config_path
+        ai_chatbot._prompts = None  # キャッシュをクリア
 
-        result = ai_agent._load_prompts()
+        result = ai_chatbot._load_prompts()
 
         if "専門AIアシスタント" in result["llm_system_prompt"]:
             print("  ✅ 日本語コンテンツが正しく読み込まれました")
@@ -274,8 +274,8 @@ def test_japanese_content():
             return False
     finally:
         # 設定を復元
-        ai_agent.PROMPTS_PATH = original_path
-        ai_agent._prompts = None
+        ai_chatbot.PROMPTS_PATH = original_path
+        ai_chatbot._prompts = None
         os.unlink(temp_config_path)
 
 

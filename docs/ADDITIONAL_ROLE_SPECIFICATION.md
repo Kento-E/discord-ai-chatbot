@@ -1,8 +1,8 @@
-# エージェントの追加役割指定機能
+# チャットボットの追加役割指定機能
 
 ## 概要
 
-この機能により、設定ファイル（`config/prompts.yaml`）のベースプロンプトに加えて、環境変数を通じて追加の役割や性格をエージェントに指定できます。
+この機能により、設定ファイル（`config/prompts.yaml`）のベースプロンプトに加えて、環境変数を通じて追加の役割や性格をチャットボットに指定できます。
 
 ## 使用目的
 
@@ -14,10 +14,10 @@
 
 ### ローカル環境
 
-環境変数 `ADDITIONAL_AGENT_ROLE` を設定してBotを起動します。
+環境変数 `ADDITIONAL_CHATBOT_ROLE` を設定してBotを起動します。
 
 ```bash
-export ADDITIONAL_AGENT_ROLE="あなたは経験豊富なシニアエンジニアです。
+export ADDITIONAL_CHATBOT_ROLE="あなたは経験豊富なシニアエンジニアです。
 技術的な質問に対して、以下の点を重視して回答してください：
 - ベストプラクティスの提案
 - セキュリティへの配慮
@@ -30,7 +30,7 @@ python src/main.py
 
 1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
 2. 新しいSecretを追加：
-   - **Name**: `ADDITIONAL_AGENT_ROLE`
+   - **Name**: `ADDITIONAL_CHATBOT_ROLE`
    - **Value**: 追加したい役割の説明（複数行可）
 
 例：
@@ -49,13 +49,13 @@ python src/main.py
 
 ### プロンプトの統合
 
-`ADDITIONAL_AGENT_ROLE` が設定されている場合、システムプロンプトは以下のように構成されます：
+`ADDITIONAL_CHATBOT_ROLE` が設定されている場合、システムプロンプトは以下のように構成されます：
 
 ```
 <config/prompts.yaml のベースシステムプロンプト>
 
 【追加の役割・性格】
-<ADDITIONAL_AGENT_ROLE の内容>
+<ADDITIONAL_CHATBOT_ROLE の内容>
 ```
 
 ### 例
@@ -70,7 +70,7 @@ llm_system_prompt: |
 **環境変数:**
 
 ```bash
-ADDITIONAL_AGENT_ROLE="あなたは業務効率化の専門家です。
+ADDITIONAL_CHATBOT_ROLE="あなたは業務効率化の専門家です。
 常に効率とコスト削減を重視した提案を行ってください。"
 ```
 
@@ -124,7 +124,7 @@ ADDITIONAL_AGENT_ROLE="あなたは業務効率化の専門家です。
 
 **確認事項:**
 
-1. 環境変数名が正しいか（`ADDITIONAL_AGENT_ROLE`）
+1. 環境変数名が正しいか（`ADDITIONAL_CHATBOT_ROLE`）
 2. GitHub Secretsが正しく設定されているか
 3. ワークフローファイルで環境変数が渡されているか（`.github/workflows/run-discord-bot.yml`）
 4. 起動ログに「✅ 追加の役割設定が適用されました」と表示されているか
@@ -145,7 +145,7 @@ ADDITIONAL_AGENT_ROLE="あなたは業務効率化の専門家です。
 
 ## 関連ファイル
 
-- 実装: `src/ai_agent.py` - `_load_prompts()` 関数
+- 実装: `src/ai_chatbot.py` - `_load_prompts()` 関数
 - テスト: `src/test_prompts_loading.py` - 既存のプロンプト読み込みテストで動作検証
 - ワークフロー: `.github/workflows/run-discord-bot.yml`
 - ベースプロンプト: `config/prompts.yaml`

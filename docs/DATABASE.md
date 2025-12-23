@@ -309,5 +309,5 @@ rm data/knowledge.db
 - `src/knowledge_db.py`: データベース管理モジュール
 - `src/fetch_messages.py`: メッセージ取得スクリプト
 - `src/prepare_dataset.py`: 埋め込み生成スクリプト
-- `src/ai_agent.py`: AIエージェント（データベース対応）
+- `src/ai_chatbot.py`: AIチャットボット（データベース対応）
 - `src/test_knowledge_db.py`: データベース機能のテスト

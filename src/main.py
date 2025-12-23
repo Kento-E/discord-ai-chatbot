@@ -41,14 +41,14 @@ class MyClient(discord.Client):
 client = MyClient(intents=intents)
 
 
-# ai_agent モジュールのインポート（埋め込みデータが存在する場合のみ）
+# ai_chatbot モジュールのインポート（埋め込みデータが存在する場合のみ）
 # 注意: 遅延ロードにより、実際のデータロードは初回応答時に行われます
 generate_response = None
 if os.path.exists(EMBED_PATH):
     try:
-        from ai_agent import generate_response
+        from ai_chatbot import generate_response
 
-        print("✅ AIエージェント機能が有効化されました")
+        print("✅ AIチャットボット機能が有効化されました")
         print("   💡 モデルとデータは初回応答時に自動的にロードされます")
 
         # APIキーの確認
@@ -59,7 +59,7 @@ if os.path.exists(EMBED_PATH):
             print("   ⚠️ 警告: GEMINI_API_KEYが設定されていません")
             print("   💡 GEMINI_API_KEY環境変数を設定してください")
     except Exception as e:
-        print(f"❌ AIエージェントのロード中にエラーが発生しました: {e}")
+        print(f"❌ AIチャットボットのロード中にエラーが発生しました: {e}")
         generate_response = None
 
 
@@ -95,8 +95,8 @@ async def on_message(message):
         if os.path.exists(EMBED_PATH) and generate_response:
             # LLMを使用して返信を生成
             try:
-                # 初回初期化の責任をai_agentモジュール側に持たせる
-                from ai_agent import ensure_initialized_with_callback
+                # 初回初期化の責任をai_chatbotモジュール側に持たせる
+                from ai_chatbot import ensure_initialized_with_callback
 
                 loading_msg = None
 

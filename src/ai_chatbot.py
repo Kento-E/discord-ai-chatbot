@@ -1,5 +1,5 @@
 """
-AIエージェントモジュール
+AIチャットボットモジュール
 
 このモジュールは遅延ロード（Lazy Loading）を使用して、起動時間を最適化しています。
 モデルとデータは初回の関数呼び出し時にロードされ、以降はキャッシュが使用されます。
@@ -127,7 +127,7 @@ def ensure_initialized_with_callback(callback=None):
         except json.JSONDecodeError as e:
             raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
         except Exception as e:
-            raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}") from e
+            raise Exception(f"AIチャットボットの初期化に失敗しました: {str(e)}") from e
 
 
 def _ensure_initialized():
@@ -194,14 +194,14 @@ def _ensure_initialized():
         except json.JSONDecodeError as e:
             raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
         except Exception as e:
-            raise Exception(f"AIエージェントの初期化に失敗しました: {str(e)}") from e
+            raise Exception(f"AIチャットボットの初期化に失敗しました: {str(e)}") from e
 
 
 def _load_prompts():
     """
     プロンプト設定をファイルから読み込む（キャッシュあり）
 
-    環境変数 ADDITIONAL_AGENT_ROLE が設定されている場合、
+    環境変数 ADDITIONAL_CHATBOT_ROLE が設定されている場合、
     その内容をシステムプロンプトに追加します。
     ただし、環境変数が空文字列または空白のみの場合は無視されます。
 
@@ -218,7 +218,7 @@ def _load_prompts():
     global _prompts, _cached_additional_role
 
     # 環境変数の現在の値を取得
-    current_additional_role = os.environ.get("ADDITIONAL_AGENT_ROLE", "").strip()
+    current_additional_role = os.environ.get("ADDITIONAL_CHATBOT_ROLE", "").strip()
 
     # 環境変数が変更された場合はキャッシュを無効化
     if _prompts is not None and _cached_additional_role != current_additional_role:

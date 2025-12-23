@@ -45,5 +45,5 @@ def print_update_instructions():
     print("🔧 対処が必要:")
     print("   以下のファイルでモデル名を更新してください:")
     print("   - src/test_gemini_connection.py")
-    print("   - src/ai_agent.py")
+    print("   - src/ai_chatbot.py")
     print("   - src/validate_gemini_model.py")

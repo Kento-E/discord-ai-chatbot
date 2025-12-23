@@ -56,7 +56,7 @@ Discordサーバーからメッセージを取得し、AI学習用の埋め込�
 
 #### 概要
 
-Discord AIエージェントBotを起動するワークフローです。最新のGitHub Releaseから暗号化された知識データをダウンロードし、復号化してBotを実行します。
+Discord AIチャットボットBotを起動するワークフローです。最新のGitHub Releaseから暗号化された知識データをダウンロードし、復号化してBotを実行します。
 
 #### トリガー条件
 
@@ -77,7 +77,7 @@ Discord AIエージェントBotを起動するワークフローです。最新�
 - `TARGET_GUILD_ID`: 対象のサーバーID
 - `ENCRYPTION_KEY`: 復号化に使用する鍵（生成時と同じ鍵）
 - `GEMINI_API_KEY`: Google Gemini APIキー（応答生成に必須）
-- `ADDITIONAL_AGENT_ROLE`（オプション）: エージェントに追加したい役割や性格の指定。設定ファイルのベースプロンプトに加えて適用されます
+- `ADDITIONAL_CHATBOT_ROLE`（オプション）: チャットボットに追加したい役割や性格の指定。設定ファイルのベースプロンプトに加えて適用されます
 
 #### 注意事項
 
