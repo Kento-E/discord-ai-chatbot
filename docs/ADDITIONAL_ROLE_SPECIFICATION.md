@@ -58,6 +58,24 @@ python src/main.py
 <ADDITIONAL_CHATBOT_ROLE の内容>
 ```
 
+### プロンプト構造
+
+LLMへ送信される最終的なプロンプトは、以下の構造で構築されます：
+
+```
+1. システムプロンプト
+   + 【追加の役割・性格】（設定されている場合）
+   + 応答生成ルール（config/prompts.yamlのllm_response_instruction）
+
+2. 【過去メッセージ】（知識データから検索された関連メッセージ）
+
+3. 【ユーザーの質問】
+
+4. 【回答】（LLMに応答を促すヘッダー）
+```
+
+追加の役割と応答ルールは**クエリの前**に配置されるため、LLMはこれらの指示を認識し、知識データに基づいた適切な応答を生成します。
+
 ### 例
 
 **ベースプロンプト（config/prompts.yaml）:**
@@ -145,7 +163,7 @@ ADDITIONAL_CHATBOT_ROLE="あなたは業務効率化の専門家です。
 
 ## 関連ファイル
 
-- 実装: `src/ai_chatbot.py` - `_load_prompts()` 関数
-- テスト: `src/test_prompts_loading.py` - 既存のプロンプト読み込みテストで動作検証
+- 実装: `src/ai_chatbot.py` - `_load_prompts()` および `generate_response_with_llm()` 関数
+- テスト: `src/test_prompts_loading.py` - プロンプト読み込みの基本テスト
 - ワークフロー: `.github/workflows/run-discord-bot.yml`
 - ベースプロンプト: `config/prompts.yaml`

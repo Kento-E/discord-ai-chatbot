@@ -308,7 +308,12 @@ def generate_response_with_llm(query, similar_messages):
     prompts = _load_prompts()
 
     # プロンプトの構築（外部設定ファイルから読み込み）
-    prompt = f"""{prompts['llm_system_prompt']}
+    # システムプロンプトと応答指示を統合
+    system_instructions = f"""{prompts['llm_system_prompt']}
+
+{prompts['llm_response_instruction']}"""
+
+    prompt = f"""{system_instructions}
 
 {prompts['llm_context_header']}
 {context}
@@ -316,8 +321,7 @@ def generate_response_with_llm(query, similar_messages):
 {prompts['llm_query_header']}
 {query}
 
-{prompts['llm_response_header']}
-{prompts['llm_response_instruction']}"""
+{prompts['llm_response_header']}"""
 
     # リクエストをログに記録
     log_llm_request(query, len(similar_messages[:5]))
