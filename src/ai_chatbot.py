@@ -96,7 +96,7 @@ def _load_model_and_embeddings():
                 "prepare_dataset.pyを実行してデータを生成してください。"
             )
 
-        with open(EMBED_PATH, "r") as f:
+        with open(EMBED_PATH, "r", encoding="utf-8") as f:
             dataset = json.load(f)
 
         _texts = [item["text"] for item in dataset]
