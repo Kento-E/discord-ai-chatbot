@@ -319,7 +319,7 @@ class KnowledgeDB:
                 query += " AND m.importance >= ?"
                 params.append(min_importance)
 
-            query += " ORDER BY m.timestamp DESC"
+            query += " ORDER BY m.id"
 
             cursor.execute(query, params)
             rows = cursor.fetchall()
