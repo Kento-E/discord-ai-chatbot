@@ -54,6 +54,56 @@ def is_initialized():
     return _initialized
 
 
+def _load_model_and_embeddings():
+    """
+    モデルと埋め込みデータをロードする共通処理
+
+    この関数はモデルとデータの実際のロード処理を行います。
+    初期化関数から呼び出され、重複コードを排除します。
+
+    Raises:
+        FileNotFoundError: EMBED_PATHまたはDB_PATHが存在しない場合
+        json.JSONDecodeError: JSONファイルの解析に失敗した場合
+        Exception: モデルのロードに失敗した場合
+    """
+    global _model, _texts, _embeddings, _db
+
+    # sentence_transformersを遅延インポート（起動時間の最適化）
+    from sentence_transformers import SentenceTransformer
+
+    # モデルのロード
+    _model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    # データベースまたはJSONからデータをロード
+    use_db = os.path.exists(DB_PATH) and not USE_JSON_FALLBACK
+
+    if use_db:
+        # データベースモード
+        _db = KnowledgeDB(DB_PATH)
+        _texts, _embeddings = _db.get_all_embeddings()
+
+        if not _texts:
+            raise FileNotFoundError(
+                f"埋め込みデータが見つかりません: {DB_PATH}\n"
+                "prepare_dataset.pyを実行してデータを生成してください。"
+            )
+        print(f"   📊 データベースから{len(_texts)}件の埋め込みデータを読み込みました")
+    else:
+        # JSONモード（後方互換）
+        if not os.path.exists(EMBED_PATH):
+            raise FileNotFoundError(
+                f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
+                "prepare_dataset.pyを実行してデータを生成してください。"
+            )
+
+        with open(EMBED_PATH, "r", encoding="utf-8") as f:
+            dataset = json.load(f)
+
+        _texts = [item["text"] for item in dataset]
+        _embeddings = [item["embedding"] for item in dataset]
+        print(f"   📊 JSONファイルから{len(_texts)}件の埋め込みデータを読み込みました")
+
+
 def ensure_initialized_with_callback(callback=None):
     """
     初期化を実行し、コールバックを通じて初回初期化かどうかを通知する
@@ -72,7 +122,7 @@ def ensure_initialized_with_callback(callback=None):
         json.JSONDecodeError: JSONファイルの解析に失敗した場合
         Exception: モデルのロードに失敗した場合
     """
-    global _model, _texts, _embeddings, _initialized, _db
+    global _initialized
 
     # 既に初期化済み
     if _initialized:
@@ -89,39 +139,7 @@ def ensure_initialized_with_callback(callback=None):
             callback()
 
         try:
-            # sentence_transformersを遅延インポート（起動時間の最適化）
-            from sentence_transformers import SentenceTransformer
-
-            # モデルのロード
-            _model = SentenceTransformer("all-MiniLM-L6-v2")
-
-            # データベースまたはJSONからデータをロード
-            use_db = os.path.exists(DB_PATH) and not USE_JSON_FALLBACK
-
-            if use_db:
-                # データベースモード
-                _db = KnowledgeDB(DB_PATH)
-                _texts, _embeddings = _db.get_all_embeddings()
-
-                if not _texts:
-                    raise FileNotFoundError(
-                        f"埋め込みデータが見つかりません: {DB_PATH}\n"
-                        "prepare_dataset.pyを実行してデータを生成してください。"
-                    )
-            else:
-                # JSONモード（後方互換）
-                if not os.path.exists(EMBED_PATH):
-                    raise FileNotFoundError(
-                        f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
-                        "prepare_dataset.pyを実行してデータを生成してください。"
-                    )
-
-                with open(EMBED_PATH, "r") as f:
-                    dataset = json.load(f)
-
-                _texts = [item["text"] for item in dataset]
-                _embeddings = [item["embedding"] for item in dataset]
-
+            _load_model_and_embeddings()
             _initialized = True
             return False  # 初回初期化完了
         except json.JSONDecodeError as e:
@@ -142,7 +160,7 @@ def _ensure_initialized():
         json.JSONDecodeError: JSONファイルの解析に失敗した場合
         Exception: モデルのロードに失敗した場合
     """
-    global _model, _texts, _embeddings, _initialized, _db
+    global _initialized
 
     # 初期チェック（ロックなし）- パフォーマンス最適化
     if _initialized:
@@ -155,39 +173,7 @@ def _ensure_initialized():
             return
 
         try:
-            # sentence_transformersを遅延インポート（起動時間の最適化）
-            from sentence_transformers import SentenceTransformer
-
-            # モデルのロード
-            _model = SentenceTransformer("all-MiniLM-L6-v2")
-
-            # データベースまたはJSONからデータをロード
-            use_db = os.path.exists(DB_PATH) and not USE_JSON_FALLBACK
-
-            if use_db:
-                # データベースモード
-                _db = KnowledgeDB(DB_PATH)
-                _texts, _embeddings = _db.get_all_embeddings()
-
-                if not _texts:
-                    raise FileNotFoundError(
-                        f"埋め込みデータが見つかりません: {DB_PATH}\n"
-                        "prepare_dataset.pyを実行してデータを生成してください。"
-                    )
-            else:
-                # JSONモード（後方互換）
-                if not os.path.exists(EMBED_PATH):
-                    raise FileNotFoundError(
-                        f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
-                        "prepare_dataset.pyを実行してデータを生成してください。"
-                    )
-
-                with open(EMBED_PATH, "r") as f:
-                    dataset = json.load(f)
-
-                _texts = [item["text"] for item in dataset]
-                _embeddings = [item["embedding"] for item in dataset]
-
+            _load_model_and_embeddings()
             _initialized = True
         except FileNotFoundError:
             raise

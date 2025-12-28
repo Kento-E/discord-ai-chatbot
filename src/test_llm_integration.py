@@ -165,7 +165,7 @@ def test_integration_with_generate_response():
 def test_prompt_structure():
     """プロンプト構造のテスト（APIコールなし）"""
     print("\n=== プロンプト構造テスト ===\n")
-    
+
     try:
         # テスト用のメッセージ
         test_similar_messages = [
@@ -173,136 +173,138 @@ def test_prompt_structure():
             "過去のメッセージ2",
         ]
         test_query = "テスト質問"
-        
+
         # 環境変数を一時的に設定
         original_role = os.environ.get("ADDITIONAL_CHATBOT_ROLE")
         original_api_key = os.environ.get("GEMINI_API_KEY")
         os.environ["GEMINI_API_KEY"] = "test_key"
         os.environ["ADDITIONAL_CHATBOT_ROLE"] = "あなたはテスト用の役割です。"
-        
+
         try:
             import ai_chatbot
-            
+
             # モジュールのキャッシュをクリア
             ai_chatbot._prompts = None
             ai_chatbot._cached_additional_role = None
             ai_chatbot._gemini_model = None
             ai_chatbot._gemini_module = None
-            
+
             # モックレスポンスとモデルを作成
             mock_response = MagicMock()
             mock_response.text = "テスト応答"
-            
+
             mock_genai = MagicMock()
             mock_genai.types.GenerationConfig = MagicMock
-            
+
             mock_model = MagicMock()
             mock_model.generate_content.return_value = mock_response
-            
+
             # Geminiモジュールとモデルをモック
-            with patch('ai_chatbot._gemini_module', mock_genai):
-                with patch('ai_chatbot._gemini_model', mock_model):
-                    with patch('ai_chatbot._safety_settings', []):
+            with patch("ai_chatbot._gemini_module", mock_genai):
+                with patch("ai_chatbot._gemini_model", mock_model):
+                    with patch("ai_chatbot._safety_settings", []):
                         from ai_chatbot import generate_response_with_llm
-                        
+
                         # 関数を呼び出し
                         response, error = generate_response_with_llm(
                             test_query, test_similar_messages
                         )
-                        
+
                         # generate_content が呼ばれたことを確認
-                        assert mock_model.generate_content.called, (
-                            "generate_content が呼ばれませんでした"
-                        )
-                        
+                        assert (
+                            mock_model.generate_content.called
+                        ), "generate_content が呼ばれませんでした"
+
                         # 呼び出し時の引数（prompt）を取得
                         call_args = mock_model.generate_content.call_args
                         prompt = call_args[0][0]  # 最初の位置引数がプロンプト
-                        
+
                         print("✓ プロンプト構造を検証:")
                         print(f"  プロンプト長: {len(prompt)} 文字\n")
-                        
+
                         # 1. システムプロンプトが先頭にあること
-                        assert prompt.startswith("あなたは"), (
-                            "システムプロンプトが先頭にありません"
-                        )
+                        assert prompt.startswith(
+                            "あなたは"
+                        ), "システムプロンプトが先頭にありません"
                         print("  ✓ システムプロンプトが先頭に配置されています")
-                        
+
                         # 2. 追加の役割が含まれていること
-                        assert "【追加の役割・性格】" in prompt, (
-                            "追加の役割セクションが見つかりません"
-                        )
-                        assert "テスト用の役割" in prompt, (
-                            "追加の役割の内容が含まれていません"
-                        )
+                        assert (
+                            "【追加の役割・性格】" in prompt
+                        ), "追加の役割セクションが見つかりません"
+                        assert (
+                            "テスト用の役割" in prompt
+                        ), "追加の役割の内容が含まれていません"
                         print("  ✓ 追加の役割が統合されています")
-                        
+
                         # 3. 応答指示が含まれていること
-                        assert "上記の過去メッセージに基づいて" in prompt, (
-                            "応答指示が見つかりません"
-                        )
+                        assert (
+                            "上記の過去メッセージに基づいて" in prompt
+                        ), "応答指示が見つかりません"
                         print("  ✓ 応答指示が統合されています")
-                        
+
                         # 4. プロンプトの構造順序を確認
                         system_start = prompt.find("あなたは")
                         role_pos = prompt.find("【追加の役割・性格】")
                         instruction_pos = prompt.find("上記の過去メッセージに基づいて")
                         context_pos = prompt.find("【過去メッセージ】")
                         query_pos = prompt.find("【ユーザーの質問】")
-                        
+
                         # 順序検証: システム < 追加役割 < 応答指示 < コンテキスト < クエリ
-                        assert system_start < role_pos, (
-                            "システムプロンプトが追加の役割より後にあります"
-                        )
-                        assert role_pos < instruction_pos, (
-                            "追加の役割が応答指示より後にあります"
-                        )
-                        assert instruction_pos < context_pos, (
-                            "応答指示がコンテキストより後にあります"
-                        )
-                        assert context_pos < query_pos, (
-                            "コンテキストがクエリより後にあります"
-                        )
+                        assert (
+                            system_start < role_pos
+                        ), "システムプロンプトが追加の役割より後にあります"
+                        assert (
+                            role_pos < instruction_pos
+                        ), "追加の役割が応答指示より後にあります"
+                        assert (
+                            instruction_pos < context_pos
+                        ), "応答指示がコンテキストより後にあります"
+                        assert (
+                            context_pos < query_pos
+                        ), "コンテキストがクエリより後にあります"
                         print("  ✓ プロンプト要素の順序が正しい:")
-                        print("    システムプロンプト → 追加の役割 → 応答指示 → コンテキスト → クエリ")
-                        
+                        print(
+                            "    システムプロンプト → 追加の役割 → 応答指示 → コンテキスト → クエリ"
+                        )
+
                         # 5. コンテキストとクエリが含まれていること
-                        assert "過去のメッセージ1" in prompt, (
-                            "コンテキストが含まれていません"
-                        )
-                        assert "テスト質問" in prompt, (
-                            "クエリが含まれていません"
-                        )
+                        assert (
+                            "過去のメッセージ1" in prompt
+                        ), "コンテキストが含まれていません"
+                        assert "テスト質問" in prompt, "クエリが含まれていません"
                         print("  ✓ コンテキストとクエリが正しく配置されています")
-                        
+
                         print("\n✅ プロンプト構造のすべての検証に成功しました")
                         return True
-                
+
         finally:
             # 環境変数を復元
             if original_role is not None:
                 os.environ["ADDITIONAL_CHATBOT_ROLE"] = original_role
             elif "ADDITIONAL_CHATBOT_ROLE" in os.environ:
                 del os.environ["ADDITIONAL_CHATBOT_ROLE"]
-            
+
             if original_api_key is not None:
                 os.environ["GEMINI_API_KEY"] = original_api_key
             elif "GEMINI_API_KEY" in os.environ:
                 del os.environ["GEMINI_API_KEY"]
-            
+
             # モジュールのキャッシュをクリア
             import ai_chatbot
+
             ai_chatbot._prompts = None
             ai_chatbot._cached_additional_role = None
             ai_chatbot._gemini_model = None
             ai_chatbot._gemini_module = None
-    
+
     except AssertionError as e:
         print(f"❌ アサーション失敗: {e}")
         return False
     except Exception as e:
         print(f"❌ エラーが発生しました: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
