@@ -108,6 +108,7 @@ def ensure_initialized_with_callback(callback=None):
                         f"埋め込みデータが見つかりません: {DB_PATH}\n"
                         "prepare_dataset.pyを実行してデータを生成してください。"
                     )
+                print(f"   📊 データベースから{len(_texts)}件の埋め込みデータを読み込みました")
             else:
                 # JSONモード（後方互換）
                 if not os.path.exists(EMBED_PATH):
@@ -121,6 +122,7 @@ def ensure_initialized_with_callback(callback=None):
 
                 _texts = [item["text"] for item in dataset]
                 _embeddings = [item["embedding"] for item in dataset]
+                print(f"   📊 JSONファイルから{len(_texts)}件の埋め込みデータを読み込みました")
 
             _initialized = True
             return False  # 初回初期化完了
@@ -174,6 +176,7 @@ def _ensure_initialized():
                         f"埋め込みデータが見つかりません: {DB_PATH}\n"
                         "prepare_dataset.pyを実行してデータを生成してください。"
                     )
+                print(f"   📊 データベースから{len(_texts)}件の埋め込みデータを読み込みました")
             else:
                 # JSONモード（後方互換）
                 if not os.path.exists(EMBED_PATH):
@@ -187,6 +190,7 @@ def _ensure_initialized():
 
                 _texts = [item["text"] for item in dataset]
                 _embeddings = [item["embedding"] for item in dataset]
+                print(f"   📊 JSONファイルから{len(_texts)}件の埋め込みデータを読み込みました")
 
             _initialized = True
         except FileNotFoundError:
