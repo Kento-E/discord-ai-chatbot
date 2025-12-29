@@ -58,13 +58,9 @@ jobs:
             echo "📊 データベースモード: SQLite"
             # データベースファイルを圧縮・暗号化
             tar czf - data/knowledge.db | openssl enc -aes-256-cbc -salt -pbkdf2 -pass env:ENCRYPTION_KEY -out knowledge-data.enc
-          elif [ -f data/messages.json ] && [ -f data/embeddings.json ]; then
-            echo "📊 データベースモード: JSON（後方互換）"
-            # JSONファイルを圧縮・暗号化
-            tar czf - data/*.json | openssl enc -aes-256-cbc -salt -pbkdf2 -pass env:ENCRYPTION_KEY -out knowledge-data.enc
           else
             echo "❌ エラー: 必要なデータファイルが見つかりません"
-            echo "   データベース (data/knowledge.db) または JSON (data/messages.json + data/embeddings.json) が必要です"
+            echo "   データベース (data/knowledge.db) が必要です"
             exit 1
           fi
           

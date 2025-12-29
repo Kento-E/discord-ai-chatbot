@@ -3,7 +3,6 @@ import os
 import discord
 from discord import app_commands
 
-EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 DB_PATH = os.path.join(os.path.dirname(__file__), "../data/knowledge.db")
 
 # 環境変数から機密情報を読み取る
@@ -45,8 +44,8 @@ client = MyClient(intents=intents)
 # ai_chatbot モジュールのインポート（埋め込みデータが存在する場合のみ）
 # 注意: 遅延ロードにより、実際のデータロードは初回応答時に行われます
 generate_response = None
-# データベースまたはJSONファイルのいずれかが存在すればチャットボット機能を有効化
-if os.path.exists(DB_PATH) or os.path.exists(EMBED_PATH):
+# データベースが存在すればチャットボット機能を有効化
+if os.path.exists(DB_PATH):
     try:
         from ai_chatbot import generate_response
 
@@ -95,7 +94,7 @@ async def on_message(message):
             )
             return
         if (
-            os.path.exists(DB_PATH) or os.path.exists(EMBED_PATH)
+            os.path.exists(DB_PATH)
         ) and generate_response:
             # LLMを使用して返信を生成
             try:
