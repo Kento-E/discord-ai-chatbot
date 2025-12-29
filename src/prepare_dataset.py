@@ -6,7 +6,6 @@
 """
 
 import os
-import sys
 
 from sentence_transformers import SentenceTransformer
 
