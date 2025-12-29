@@ -59,7 +59,7 @@ CREATE TABLE messages (
 ```sql
 CREATE TABLE embeddings (
     message_id INTEGER PRIMARY KEY,   -- メッセージID（外部キー）
-    embedding_vector TEXT NOT NULL,   -- 埋め込みベクトル
+    embedding_vector TEXT NOT NULL,   -- 埋め込みベクトル（テキスト形式でリストを保存）
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 生成日時
     FOREIGN KEY (message_id) REFERENCES messages(id)
 )
