@@ -37,6 +37,23 @@
 
 コミット前に以下のいずれかの方法でリンターを実行し、すべてのエラーを修正してください：
 
+#### Copilot向け特別指示
+
+**Copilotがコードを生成する場合、`report_progress`でコミットする前に必ずリンターを実行して修正すること**
+
+```bash
+# コード生成後、コミット前に必ず実行
+black src/
+isort --profile black src/
+autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables src/
+flake8 src/
+```
+
+理由：
+- `report_progress`ツールはpre-commitフックをバイパスするため、自動フォーマットが適用されない
+- リンターを事前実行することで、CIでのフォーマットエラーを防止できる
+- コミット後のCI失敗→修正コミットというサイクルを回避し、効率的な開発が可能
+
 #### 方法1: Pre-commitフック（推奨）
 
 ```bash
@@ -181,6 +198,7 @@ black src/
 - [ ] 未使用の変数・importを削除したか
 - [ ] 変数名は明確か
 - [ ] 必要なコメントを追加したか
+- [ ] **（Copilot）コミット前にリンター（black, isort, autoflake, flake8）を実行したか**
 - [ ] リンターでエラーがないか確認したか
 - [ ] 削除した機能に関連するコード（参考資料含む）をすべて削除したか
 - [ ] PR専用テストファイルを作成した場合、テスト完了後に同じPR内で削除したか
