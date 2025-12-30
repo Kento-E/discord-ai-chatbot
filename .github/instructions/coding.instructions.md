@@ -41,8 +41,29 @@
 
 **Copilotがコードを生成する場合、`report_progress`でコミットする前に必ずリンターを実行して修正すること**
 
+**基本方針: 変更したファイルのみをリンターで検証**
+
 ```bash
-# コード生成後、コミット前に必ず実行
+# 変更したファイルのみリンター実行（通常はこれで十分）
+# 例: src/ai_chatbot.py を変更した場合
+black src/ai_chatbot.py
+isort --profile black src/ai_chatbot.py
+autoflake --in-place --remove-all-unused-imports --remove-unused-variables src/ai_chatbot.py
+flake8 src/ai_chatbot.py
+
+# 複数ファイルを変更した場合
+black src/file1.py src/file2.py
+isort --profile black src/file1.py src/file2.py
+autoflake --in-place --remove-all-unused-imports --remove-unused-variables src/file1.py src/file2.py
+flake8 src/file1.py src/file2.py
+```
+
+**全ファイルスキャンが必要なケース（例外的）:**
+- PR開始時の初回コミット
+- CI失敗時に既存エラーの有無を確認する場合
+
+```bash
+# 全ファイルスキャン（例外的な場合のみ）
 black src/
 isort --profile black src/
 autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables src/
@@ -51,8 +72,9 @@ flake8 src/
 
 理由：
 - `report_progress`ツールはpre-commitフックをバイパスするため、自動フォーマットが適用されない
-- リンターを事前実行することで、CIでのフォーマットエラーを防止できる
-- コミット後のCI失敗→修正コミットというサイクルを回避し、効率的な開発が可能
+- 変更ファイルのみのリンターで効率的にエラーを防止（1-2秒）
+- 全ファイルスキャンは不要（CIが実行するため）
+- 既存ファイルの既存エラーはCIで検出され、その時点で修正すれば良い
 
 #### 方法1: Pre-commitフック（推奨）
 
