@@ -69,6 +69,12 @@ def _load_model_and_embeddings():
     # モデルのロード
     _model = SentenceTransformer("all-MiniLM-L6-v2")
 
+    # データベースファイルの存在を確認
+    if not os.path.exists(DB_PATH):
+        raise FileNotFoundError(
+            f"知識データベースファイルが見つかりません: {DB_PATH}\n"
+            "prepare_dataset.pyを実行してデータベースを生成してください。"
+        )
     # データベースからデータをロード
     _db = KnowledgeDB(DB_PATH)
     _texts, _embeddings = _db.get_all_embeddings()
