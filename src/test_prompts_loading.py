@@ -112,7 +112,8 @@ def test_invalid_yaml():
         except RuntimeError as e:
             if "YAML構文に誤りがあります" in str(e):
                 print("  ✅ YAML解析エラー時にRuntimeErrorが発生しました")
-                print(f"     エラーメッセージ: {str(e).split('\n')[0]}")
+                error_msg = str(e).split("\n")[0]
+                print(f"     エラーメッセージ: {error_msg}")
                 return True
             else:
                 print(f"  ❌ 予期しないエラーメッセージ: {e}")
