@@ -93,7 +93,7 @@ async def on_message(message):
                 "メンションや `!ask` を使用する場合は、質問内容のみを入力してください（スラッシュは不要です）。"
             )
             return
-        if (os.path.exists(DB_PATH)) and generate_response:
+        if os.path.exists(DB_PATH) and generate_response:
             # LLMを使用して返信を生成
             try:
                 # 初回初期化の責任をai_chatbotモジュール側に持たせる
