@@ -25,7 +25,9 @@ def main():
     # データベースファイルの存在チェック
     if not os.path.exists(DB_PATH):
         print(f"❌ エラー: データベースファイルが見つかりません: {DB_PATH}")
-        print("   先に python src/fetch_messages.py を実行してメッセージを取得してください")
+        print(
+            "   先に python src/fetch_messages.py を実行してメッセージを取得してください"
+        )
         sys.exit(1)
 
     print("📊 データベースモード: SQLite（増分更新）")
