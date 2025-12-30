@@ -75,7 +75,8 @@ def test_missing_prompts_file():
         except FileNotFoundError as e:
             if "プロンプト設定ファイルが見つかりません" in str(e):
                 print("  ✅ FileNotFoundErrorが正しく発生しました")
-                print(f"     エラーメッセージ: {str(e).split('\n')[0]}")
+                error_msg = str(e).split("\n")[0]
+                print(f"     エラーメッセージ: {error_msg}")
                 return True
             else:
                 print(f"  ❌ 予期しないエラーメッセージ: {e}")
