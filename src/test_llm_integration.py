@@ -79,17 +79,17 @@ def test_api_key_requirement():
         del os.environ["GEMINI_API_KEY"]
 
     try:
-        # 埋め込みデータが存在しない場合はスキップ
-        embed_path = os.path.abspath(
+        # データベースが存在しない場合はスキップ
+        db_path = os.path.abspath(
             os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
                 "..",
                 "data",
-                "embeddings.json",
+                "knowledge.db",
             )
         )
-        if not os.path.exists(embed_path):
-            print("⚠ 埋め込みデータが存在しないため、スキップします")
+        if not os.path.exists(db_path):
+            print("⚠ データベースが存在しないため、スキップします")
             return True
 
         from ai_chatbot import generate_response
@@ -121,19 +121,19 @@ def test_integration_with_generate_response():
     """generate_response()関数との統合テスト"""
     print("\n=== generate_response()統合テスト ===\n")
 
-    # このテストは埋め込みデータが必要なため、
+    # このテストはデータベースが必要なため、
     # データが存在する場合のみ実行
-    embed_path = os.path.abspath(
+    db_path = os.path.abspath(
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             "..",
             "data",
-            "embeddings.json",
+            "knowledge.db",
         )
     )
 
-    if not os.path.exists(embed_path):
-        print("⚠ 埋め込みデータが存在しないため、スキップします")
+    if not os.path.exists(db_path):
+        print("⚠ データベースが存在しないため、スキップします")
         return True
 
     try:

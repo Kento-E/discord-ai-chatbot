@@ -37,6 +37,45 @@
 
 コミット前に以下のいずれかの方法でリンターを実行し、すべてのエラーを修正してください：
 
+#### Copilot向け特別指示
+
+**Copilotがコードを生成する場合、`report_progress`でコミットする前に必ずリンターを実行して修正すること**
+
+**基本方針: 変更したファイルのみをリンターで検証**
+
+```bash
+# 変更したファイルのみリンター実行（通常はこれで十分）
+# 例: src/ai_chatbot.py を変更した場合
+black src/ai_chatbot.py
+isort --profile black src/ai_chatbot.py
+autoflake --in-place --remove-all-unused-imports --remove-unused-variables src/ai_chatbot.py
+flake8 src/ai_chatbot.py
+
+# 複数ファイルを変更した場合
+black src/file1.py src/file2.py
+isort --profile black src/file1.py src/file2.py
+autoflake --in-place --remove-all-unused-imports --remove-unused-variables src/file1.py src/file2.py
+flake8 src/file1.py src/file2.py
+```
+
+**全ファイルスキャンが必要なケース（例外的）:**
+- PR開始時の初回コミット
+- CI失敗時に既存エラーの有無を確認する場合
+
+```bash
+# 全ファイルスキャン（例外的な場合のみ）
+black src/
+isort --profile black src/
+autoflake --in-place --recursive --remove-all-unused-imports --remove-unused-variables src/
+flake8 src/
+```
+
+理由：
+- `report_progress`ツールはpre-commitフックをバイパスするため、自動フォーマットが適用されない
+- 変更ファイルのみのリンターで効率的にエラーを防止（1-2秒）
+- 全ファイルスキャンは不要（CIが実行するため）
+- 既存ファイルの既存エラーはCIで検出され、その時点で修正すれば良い
+
 #### 方法1: Pre-commitフック（推奨）
 
 ```bash
@@ -181,6 +220,7 @@ black src/
 - [ ] 未使用の変数・importを削除したか
 - [ ] 変数名は明確か
 - [ ] 必要なコメントを追加したか
+- [ ] **（Copilot）コミット前にリンター（black, isort, autoflake, flake8）を実行したか**
 - [ ] リンターでエラーがないか確認したか
 - [ ] 削除した機能に関連するコード（参考資料含む）をすべて削除したか
 - [ ] PR専用テストファイルを作成した場合、テスト完了後に同じPR内で削除したか

@@ -14,18 +14,14 @@ AIチャットボットモジュール
 Bot起動時間が大幅に短縮されます。
 """
 
-import json
 import os
 import threading
 
 from gemini_config import create_generative_model
 from knowledge_db import KnowledgeDB
 
-EMBED_PATH = os.path.join(os.path.dirname(__file__), "../data/embeddings.json")
 DB_PATH = os.path.join(os.path.dirname(__file__), "../data/knowledge.db")
 PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.yaml")
-
-USE_JSON_FALLBACK = os.environ.get("USE_JSON_FALLBACK", "false").lower() == "true"
 
 # 遅延ロード用のグローバル変数（キャッシュ）
 _model = None
@@ -62,8 +58,7 @@ def _load_model_and_embeddings():
     初期化関数から呼び出され、重複コードを排除します。
 
     Raises:
-        FileNotFoundError: EMBED_PATHまたはDB_PATHが存在しない場合
-        json.JSONDecodeError: JSONファイルの解析に失敗した場合
+        FileNotFoundError: DB_PATHが存在しない場合
         Exception: モデルのロードに失敗した場合
     """
     global _model, _texts, _embeddings, _db
@@ -74,34 +69,22 @@ def _load_model_and_embeddings():
     # モデルのロード
     _model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # データベースまたはJSONからデータをロード
-    use_db = os.path.exists(DB_PATH) and not USE_JSON_FALLBACK
+    # データベースファイルの存在を確認
+    if not os.path.exists(DB_PATH):
+        raise FileNotFoundError(
+            f"知識データベースファイルが見つかりません: {DB_PATH}\n"
+            "prepare_dataset.pyを実行してデータベースを生成してください。"
+        )
+    # データベースからデータをロード
+    _db = KnowledgeDB(DB_PATH)
+    _texts, _embeddings = _db.get_all_embeddings()
 
-    if use_db:
-        # データベースモード
-        _db = KnowledgeDB(DB_PATH)
-        _texts, _embeddings = _db.get_all_embeddings()
-
-        if not _texts:
-            raise FileNotFoundError(
-                f"埋め込みデータが見つかりません: {DB_PATH}\n"
-                "prepare_dataset.pyを実行してデータを生成してください。"
-            )
-        print(f"   📊 データベースから{len(_texts)}件の埋め込みデータを読み込みました")
-    else:
-        # JSONモード（後方互換）
-        if not os.path.exists(EMBED_PATH):
-            raise FileNotFoundError(
-                f"埋め込みデータが見つかりません: {EMBED_PATH}\n"
-                "prepare_dataset.pyを実行してデータを生成してください。"
-            )
-
-        with open(EMBED_PATH, "r", encoding="utf-8") as f:
-            dataset = json.load(f)
-
-        _texts = [item["text"] for item in dataset]
-        _embeddings = [item["embedding"] for item in dataset]
-        print(f"   📊 JSONファイルから{len(_texts)}件の埋め込みデータを読み込みました")
+    if not _texts:
+        raise FileNotFoundError(
+            f"埋め込みデータが見つかりません: {DB_PATH}\n"
+            "prepare_dataset.pyを実行してデータを生成してください。"
+        )
+    print(f"   📊 データベースから{len(_texts)}件の埋め込みデータを読み込みました")
 
 
 def ensure_initialized_with_callback(callback=None):
@@ -118,8 +101,7 @@ def ensure_initialized_with_callback(callback=None):
         bool: 既に初期化済みだった場合True、今回初めて初期化した場合False
 
     Raises:
-        FileNotFoundError: EMBED_PATHまたはDB_PATHが存在しない場合
-        json.JSONDecodeError: JSONファイルの解析に失敗した場合
+        FileNotFoundError: DB_PATHが存在しない場合
         Exception: モデルのロードに失敗した場合
     """
     global _initialized
@@ -142,8 +124,6 @@ def ensure_initialized_with_callback(callback=None):
             _load_model_and_embeddings()
             _initialized = True
             return False  # 初回初期化完了
-        except json.JSONDecodeError as e:
-            raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
         except Exception as e:
             raise Exception(f"AIチャットボットの初期化に失敗しました: {str(e)}") from e
 
@@ -156,8 +136,7 @@ def _ensure_initialized():
     ダブルチェックロッキングパターンを使用して、パフォーマンスを最適化しています。
 
     Raises:
-        FileNotFoundError: EMBED_PATHまたはDB_PATHが存在しない場合
-        json.JSONDecodeError: JSONファイルの解析に失敗した場合
+        FileNotFoundError: DB_PATHが存在しない場合
         Exception: モデルのロードに失敗した場合
     """
     global _initialized
@@ -177,8 +156,6 @@ def _ensure_initialized():
             _initialized = True
         except FileNotFoundError:
             raise
-        except json.JSONDecodeError as e:
-            raise Exception(f"JSONファイルの解析に失敗しました: {str(e)}") from e
         except Exception as e:
             raise Exception(f"AIチャットボットの初期化に失敗しました: {str(e)}") from e
 

@@ -59,7 +59,7 @@ CREATE TABLE messages (
 ```sql
 CREATE TABLE embeddings (
     message_id INTEGER PRIMARY KEY,   -- メッセージID（外部キー）
-    embedding_vector TEXT NOT NULL,   -- 埋め込みベクトル（JSON形式）
+    embedding_vector TEXT NOT NULL,   -- 埋め込みベクトル（JSON配列形式でTEXTカラムに保存）
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 生成日時
     FOREIGN KEY (message_id) REFERENCES messages(id)
 )
@@ -204,10 +204,6 @@ critical_announcements = db.get_all_messages(
 texts, embeddings = db.get_all_embeddings(category="technical")
 ```
 
-## 後方互換性
-
-現在は後方互換性のためJSON形式もサポートしていますが、将来的に削除予定です。新規利用者はデータベース形式の使用を推奨します。
-
 ## GitHub Actionsでの利用
 
 ### ワークフローの動作
@@ -263,20 +259,6 @@ from knowledge_db import KnowledgeDB
 db = KnowledgeDB()
 print(f"メッセージ数: {db.get_message_count()}")
 print(f"埋め込み数: {db.get_embedding_count()}")
-```
-
-### JSONモードに戻したい
-
-環境変数を設定：
-
-```bash
-export USE_JSON_FALLBACK=true
-```
-
-または、データベースファイルを削除：
-
-```bash
-rm data/knowledge.db
 ```
 
 ## パフォーマンス
