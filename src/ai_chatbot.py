@@ -164,10 +164,15 @@ def _load_prompts():
     """
     プロンプト設定をファイルから読み込む（キャッシュあり）
 
-    環境変数 ADDITIONAL_CHATBOT_ROLE が設定されている場合、
-    その内容をシステムプロンプトに追加します。
-    ただし、環境変数が空文字列または空白のみの場合は無視されます。
+    環境変数でプロンプトの各要素をカスタマイズできます：
+    - CUSTOM_SYSTEM_PROMPT: システムプロンプト全体を上書き
+    - CUSTOM_RESPONSE_INSTRUCTION: 応答指示を上書き
+    - CUSTOM_CONTEXT_HEADER: コンテキストヘッダーを上書き
+    - CUSTOM_QUERY_HEADER: クエリヘッダーを上書き
+    - CUSTOM_RESPONSE_HEADER: レスポンスヘッダーを上書き
+    - ADDITIONAL_CHATBOT_ROLE: システムプロンプトに追加の役割を追加
 
+    環境変数が空文字列または空白のみの場合は無視されます。
     環境変数が変更された場合、キャッシュは自動的に無効化され、
     新しい値が反映されます。
 
@@ -182,11 +187,28 @@ def _load_prompts():
 
     # 環境変数の現在の値を取得
     current_additional_role = os.environ.get("ADDITIONAL_CHATBOT_ROLE", "").strip()
+    custom_system_prompt = os.environ.get("CUSTOM_SYSTEM_PROMPT", "").strip()
+    custom_response_instruction = os.environ.get(
+        "CUSTOM_RESPONSE_INSTRUCTION", ""
+    ).strip()
+    custom_context_header = os.environ.get("CUSTOM_CONTEXT_HEADER", "").strip()
+    custom_query_header = os.environ.get("CUSTOM_QUERY_HEADER", "").strip()
+    custom_response_header = os.environ.get("CUSTOM_RESPONSE_HEADER", "").strip()
+
+    # キャッシュキーとして使用する環境変数の組み合わせ
+    current_env_state = (
+        current_additional_role,
+        custom_system_prompt,
+        custom_response_instruction,
+        custom_context_header,
+        custom_query_header,
+        custom_response_header,
+    )
 
     # 環境変数が変更された場合はキャッシュを無効化
-    if _prompts is not None and _cached_additional_role != current_additional_role:
+    if _prompts is not None and _cached_additional_role != current_env_state:
         _prompts = None
-        print("🔄 追加の役割設定が変更されました。プロンプトを再読み込みします")
+        print("🔄 プロンプト設定が変更されました。プロンプトを再読み込みします")
 
     if _prompts is None:
         prompts_path = os.path.abspath(PROMPTS_PATH)
@@ -207,18 +229,41 @@ def _load_prompts():
                 f"エラー内容: {e}"
             ) from e
 
-        # 環境変数から追加の役割指定を読み込む
-        if current_additional_role and _prompts:
-            # システムプロンプトに追加の役割を統合
-            if "llm_system_prompt" in _prompts:
-                _prompts["llm_system_prompt"] = (
-                    f"{_prompts['llm_system_prompt']}\n\n"
-                    f"【追加の役割・性格】\n{current_additional_role}"
-                )
-                print("✅ 追加の役割設定が適用されました")
+        # 環境変数からプロンプトのカスタマイズを適用
+        if _prompts:
+            # システムプロンプトのカスタマイズ
+            if custom_system_prompt:
+                _prompts["llm_system_prompt"] = custom_system_prompt
+                print("✅ カスタムシステムプロンプトが適用されました")
+
+            # 応答指示のカスタマイズ
+            if custom_response_instruction:
+                _prompts["llm_response_instruction"] = custom_response_instruction
+                print("✅ カスタム応答指示が適用されました")
+
+            # ヘッダーのカスタマイズ
+            if custom_context_header:
+                _prompts["llm_context_header"] = custom_context_header
+                print("✅ カスタムコンテキストヘッダーが適用されました")
+            if custom_query_header:
+                _prompts["llm_query_header"] = custom_query_header
+                print("✅ カスタムクエリヘッダーが適用されました")
+            if custom_response_header:
+                _prompts["llm_response_header"] = custom_response_header
+                print("✅ カスタムレスポンスヘッダーが適用されました")
+
+            # 環境変数から追加の役割指定を読み込む（既存機能の維持）
+            if current_additional_role:
+                # システムプロンプトに追加の役割を統合
+                if "llm_system_prompt" in _prompts:
+                    _prompts["llm_system_prompt"] = (
+                        f"{_prompts['llm_system_prompt']}\n\n"
+                        f"【追加の役割・性格】\n{current_additional_role}"
+                    )
+                    print("✅ 追加の役割設定が適用されました")
 
         # 現在の環境変数の値をキャッシュに保存
-        _cached_additional_role = current_additional_role
+        _cached_additional_role = current_env_state
     return _prompts
 
 

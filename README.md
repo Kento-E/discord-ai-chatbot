@@ -133,6 +133,12 @@ GitHub Actions上でDiscord Botを実行できます。
    - `ENCRYPTION_KEY`: 知識データの暗号化/復号化に使用する鍵（詳細: [.github/workflows/ENCRYPTION_KEY_SETUP.md](.github/workflows/ENCRYPTION_KEY_SETUP.md)）
    - `GEMINI_API_KEY`（オプション）: [LLM API統合ガイド](docs/LLM_API_SETUP.md)を参照
    - `ADDITIONAL_CHATBOT_ROLE`（オプション）: チャットボットに追加したい役割や性格の指定。設定ファイルのベースプロンプトに加えて適用されます
+   - プロンプトエンジニアリング用の環境変数（オプション、詳細は[プロンプトのカスタマイズ](#プロンプトのカスタマイズ)を参照）:
+     - `CUSTOM_SYSTEM_PROMPT`: システムプロンプト全体を上書き
+     - `CUSTOM_RESPONSE_INSTRUCTION`: 応答指示を上書き
+     - `CUSTOM_CONTEXT_HEADER`: コンテキストヘッダーを上書き
+     - `CUSTOM_QUERY_HEADER`: クエリヘッダーを上書き
+     - `CUSTOM_RESPONSE_HEADER`: レスポンスヘッダーを上書き
 
 #### 2. 知識データの生成
 
@@ -213,3 +219,60 @@ make check
 
 - src/: メインロジック
 - data/: メッセージデータ保存
+
+## プロンプトのカスタマイズ
+
+チャットボットの応答スタイルをカスタマイズするには、環境変数を使用してプロンプトを調整できます。
+
+### カスタマイズ可能な環境変数
+
+1. **CUSTOM_SYSTEM_PROMPT**: システムプロンプト全体を上書き
+   - Botの基本的な振る舞いや性格を定義します
+   - 例: `あなたは技術的な質問に答える専門家です。`
+
+2. **CUSTOM_RESPONSE_INSTRUCTION**: 応答生成の指示を上書き
+   - 回答の形式やルールを指定します
+   - 例: `簡潔に箇条書きで回答してください。500文字以内に収めてください。`
+
+3. **CUSTOM_CONTEXT_HEADER**: コンテキストヘッダーを上書き
+   - 過去メッセージのセクション見出しをカスタマイズします
+   - 例: `【参考情報】`
+
+4. **CUSTOM_QUERY_HEADER**: クエリヘッダーを上書き
+   - ユーザーの質問のセクション見出しをカスタマイズします
+   - 例: `【お問い合わせ】`
+
+5. **CUSTOM_RESPONSE_HEADER**: レスポンスヘッダーを上書き
+   - 回答のセクション見出しをカスタマイズします
+   - 例: `【返答】`
+
+6. **ADDITIONAL_CHATBOT_ROLE**: システムプロンプトに追加の役割を追加
+   - 既存のシステムプロンプトを維持しつつ、追加の指示を加えます
+   - 例: `カジュアルで親しみやすい口調で話してください。`
+
+### 使用例
+
+#### ローカル環境での設定
+
+```bash
+# フレンドリーなアシスタント
+export ADDITIONAL_CHATBOT_ROLE="絵文字を適度に使用して、親しみやすい雰囲気を作ってください。"
+
+# 技術的な専門家
+export CUSTOM_SYSTEM_PROMPT="あなたは技術的な質問に答える専門家です。過去のメッセージから得られる技術的な情報を最優先し、正確で詳細な回答を提供してください。"
+
+# 簡潔な回答スタイル
+export CUSTOM_RESPONSE_INSTRUCTION="要点を絞り、箇条書きを活用して500文字以内で簡潔に回答してください。"
+
+python src/main.py
+```
+
+#### GitHub Actions上での設定
+
+1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」を開く
+2. 必要な環境変数をSecretとして追加
+3. ワークフローを実行
+
+### 設定例の参照
+
+詳細な設定例は `config/prompts.yaml.example` を参照してください。このファイルには、様々なユースケースに対応したプロンプトの例が含まれています。

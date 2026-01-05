@@ -158,6 +158,11 @@ jobs:
           TARGET_GUILD_ID: ${{ secrets.TARGET_GUILD_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ADDITIONAL_CHATBOT_ROLE: ${{ secrets.ADDITIONAL_CHATBOT_ROLE }}
+          CUSTOM_SYSTEM_PROMPT: ${{ secrets.CUSTOM_SYSTEM_PROMPT }}
+          CUSTOM_RESPONSE_INSTRUCTION: ${{ secrets.CUSTOM_RESPONSE_INSTRUCTION }}
+          CUSTOM_CONTEXT_HEADER: ${{ secrets.CUSTOM_CONTEXT_HEADER }}
+          CUSTOM_QUERY_HEADER: ${{ secrets.CUSTOM_QUERY_HEADER }}
+          CUSTOM_RESPONSE_HEADER: ${{ secrets.CUSTOM_RESPONSE_HEADER }}
           PYTHONUNBUFFERED: ${{ github.event.inputs.debug_mode == 'true' && '1' || '0' }}
         run: |
           echo "🤖 Discord Botを起動します"
