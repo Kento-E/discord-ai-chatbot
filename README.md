@@ -190,7 +190,7 @@ VS CodeでGitHub CopilotがMCPを通じてリポジトリ情報に直接アク�
 
 ### 機能概要
 
-GitHub、ファイルシステム、Pythonコード分析の3つのMCPサーバーを統合し、包括的な開発支援環境を構築します。
+複数のMCPサーバーを統合し、包括的な開発支援環境を構築します。
 
 詳細な機能説明は [.vscode/README.md](.vscode/README.md#機能) を参照してください。
 
