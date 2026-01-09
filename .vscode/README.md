@@ -41,6 +41,8 @@
 - GitHub Copilotにリポジトリの詳細情報を提供（Issue、Pull Request、コミット履歴など）
 - Personal Access Tokenをプロンプト入力方式で取得し、リポジトリにコミットしない安全な設計
 
+**参考**: [GitHub公式: Setting up the GitHub MCP Server](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/set-up-the-github-mcp-server)
+
 #### 2. Filesystem MCP Server
 
 - ワークスペース内のファイルシステムへの安全なアクセスを提供
@@ -131,6 +133,5 @@
 
 ### 参考リンク
 
-- [GitHub公式: Setting up the GitHub MCP Server](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/set-up-the-github-mcp-server)
 - [VS Code: Use MCP servers](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)
 - [リポジトリのREADME - MCP サポートセクション](../README.md#mcp-model-context-protocol-サポート)

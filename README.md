@@ -190,11 +190,9 @@ VS CodeでGitHub CopilotがMCP (Model Context Protocol)を通じてリポジト�
 
 ### 機能概要
 
-以下のMCPサーバーを統合し、包括的な開発支援環境を構築します：
+GitHub、ファイルシステム、Pythonコード分析の3つのMCPサーバーを統合し、包括的な開発支援環境を構築します。
 
-- **GitHub MCP Server**: Issue、Pull Request、コミット履歴へのアクセス
-- **Filesystem MCP Server**: ワークスペース内のファイルシステムへの安全なアクセス
-- **Python Analyzer MCP Server**: Ruffによるコード品質チェック、pytest統合、未使用コード検出
+詳細な機能説明は [.vscode/README.md](.vscode/README.md#機能) を参照してください。
 
 ### クイックスタート
 
