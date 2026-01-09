@@ -184,6 +184,35 @@ Discord TokenとGemini APIキーの有効性を確認するテストワークフ
 
 詳細については、[.github/workflows/README.md](.github/workflows/README.md)を参照してください。
 
+## MCP (Model Context Protocol) サポート
+
+VS CodeでGitHub CopilotがMCP (Model Context Protocol)を通じてリポジトリ情報に直接アクセス可能にする機能を提供しています。
+
+### 機能概要
+
+以下のMCPサーバーを統合し、包括的な開発支援環境を構築します：
+
+- **GitHub MCP Server**: Issue、Pull Request、コミット履歴へのアクセス
+- **Filesystem MCP Server**: ワークスペース内のファイルシステムへの安全なアクセス
+- **Python Analyzer MCP Server**: Ruffによるコード品質チェック、pytest統合、未使用コード検出
+
+### クイックスタート
+
+1. **前提条件**
+   - VS Code（最新版推奨）
+   - GitHub Copilot拡張機能
+   - Docker（GitHub MCP Server用）
+   - Node.js/npx（Filesystem MCP Server用）
+   - uvx（Python Analyzer MCP Server用）
+
+2. **使用方法**
+   - VS Codeでこのリポジトリを開くと、GitHub Personal Access Tokenの入力を求められます
+   - トークンの生成方法と詳細な設定手順は [.vscode/README.md](.vscode/README.md) を参照してください
+
+### セキュリティ
+
+Personal Access Tokenはプロンプト入力方式でリポジトリに保存されません。トークン生成方法と必要な権限スコープの詳細は [.vscode/README.md](.vscode/README.md#セキュリティ) を参照してください。
+
 ## コード品質とリンター
 
 このプロジェクトでは、コード品質を保つためにリンターとフォーマッターを使用しています。
