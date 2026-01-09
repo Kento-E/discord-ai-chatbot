@@ -67,6 +67,8 @@
      pip install uv
      ```
 
+     **注**: `uv`パッケージをインストールすると、`uvx`コマンドも同時にインストールされます。
+
 2. **初回起動時の設定**
    - VS Codeでこのリポジトリを開くと、GitHub Personal Access Tokenの入力を求められます
    - トークンの取得方法は、このドキュメントの「セキュリティ」セクションを参照してください
@@ -83,7 +85,11 @@
 #### Personal Access Tokenの生成
 
 1. [GitHub Settings](https://github.com/settings/tokens) でトークンを生成
-2. 必要な権限スコープ: `repo`, `read:org`, `read:user`, `workflow`
+2. 必要な権限スコープ:
+   - `repo`: リポジトリへのアクセス（必須）
+   - `read:org`: 組織情報の読み取り（推奨）
+   - `read:user`: ユーザー情報の読み取り（推奨）
+   - `workflow`: GitHub Actionsワークフローへのアクセス（オプション - ワークフロー情報が必要な場合のみ）
 
 #### 注意事項
 
