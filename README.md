@@ -199,9 +199,9 @@ GitHub、ファイルシステム、Pythonコード分析の3つのMCPサーバ�
 1. **前提条件**
    - VS Code（最新版推奨）
    - GitHub Copilot拡張機能
-   - Docker（GitHub MCP Server用）
-   - Node.js/npx（Filesystem MCP Server用）
-   - uvx（Python Analyzer MCP Server用）
+   - 各MCPサーバーの実行環境（Docker、Node.js、uvx）
+
+   詳細な前提条件は [.vscode/README.md](.vscode/README.md#使用方法) を参照してください。
 
 2. **使用方法**
    - VS Codeでこのリポジトリを開くと、GitHub Personal Access Tokenの入力を求められます
