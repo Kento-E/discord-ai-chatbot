@@ -199,7 +199,7 @@ VS CodeでGitHub CopilotがMCPを通じてリポジトリ情報に直接アク�
 1. **前提条件**
    - VS Code（最新版推奨）
    - GitHub Copilot拡張機能
-   - 各MCPサーバーの実行環境（Docker、Node.js、uvx）
+   - 各MCPサーバーの必要な実行環境
 
    詳細な前提条件は [.vscode/README.md](.vscode/README.md#使用方法) を参照してください。
 
