@@ -33,7 +33,10 @@ data/*.db
 !data/.gitignore
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/mcp.json
+!.vscode/extensions.json
+!.vscode/README.md
 .idea/
 *.swp
 *.swo
