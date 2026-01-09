@@ -27,9 +27,9 @@
 
 ## mcp.json
 
-**MCP (Model Context Protocol) サーバー設定ファイル**
+**MCPサーバー設定ファイル**
 
-このファイルは、GitHub Copilotが MCP (Model Context Protocol) を通じてリポジトリ情報にアクセスするための設定を定義しています。
+このファイルは、GitHub CopilotがMCPを通じてリポジトリ情報にアクセスするための設定を定義しています。
 
 ### 機能
 

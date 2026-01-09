@@ -186,7 +186,7 @@ Discord TokenとGemini APIキーの有効性を確認するテストワークフ
 
 ## MCP (Model Context Protocol) サポート
 
-VS CodeでGitHub CopilotがMCP (Model Context Protocol)を通じてリポジトリ情報に直接アクセス可能にする機能を提供しています。
+VS CodeでGitHub CopilotがMCPを通じてリポジトリ情報に直接アクセス可能にする機能を提供しています。
 
 ### 機能概要
 
