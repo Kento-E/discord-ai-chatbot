@@ -134,75 +134,7 @@ PRが承認されたときに、GitHubの自動マージ機能を有効化する
 - Draft状態のPRは自動マージされません（Ready for reviewに変更してから承認してください）
 - マージコンフリクトがある場合、自動マージは実行されません
 
-### 5. Dependabot Auto Approve (`dependabot-auto-approve.yml`)
-
-#### 概要
-
-Dependabotが作成したPRを自動的に承認し、マージ設定を有効化するワークフローです。Dependabotによる依存関係更新を完全自動化します。
-
-#### 依存関係の自動更新について
-
-このリポジトリではDependabotを使用して依存関係を自動的に監視し、更新が利用可能になるとPRを自動作成します。Python パッケージ（requirements.txt）と GitHub Actions ワークフローの両方を監視しています。
-
-#### トリガー条件
-
-- イベント: `pull_request_target` (opened, reopened, synchronize)
-- 条件: PRの作成者が `dependabot[bot]` である
-
-#### 動作
-
-1. DependabotによるPRであることを確認（PRの作成者をチェック）
-2. Dependabotメタデータを取得（更新タイプなど）
-3. PRを自動承認（`gh pr review --approve`）
-4. GitHub CLIの`gh pr merge --auto`コマンドで自動マージを有効化
-5. すべてのステータスチェックが成功すると、GitHubが自動的にSquash and Mergeを実行
-6. マージ後、ブランチが自動削除される
-
-#### Dependabotの更新スケジュール
-
-設定ファイル: [.github/dependabot.yml](../dependabot.yml)
-
-- **実行タイミング**: 毎週土曜日午前9時（JST）
-- **Python依存関係**: 最大10件のPRを同時にオープン
-- **GitHub Actions**: 最大5件のPRを同時にオープン
-
-#### ラベルとレビュアー
-
-- 自動的に `dependencies` ラベルが付与される
-- Python更新には `python` ラベル、GitHub Actions更新には `github-actions` ラベルが追加
-- PRレビュアーとしてリポジトリオーナーが自動割り当て
-
-#### セキュリティアップデート
-
-- セキュリティ脆弱性が検出された場合、優先的に更新PRが作成される
-- 手動でのバージョン管理作業を削減し、常に最新の安全な依存関係を維持
-
-#### 自動承認とマージの動作フロー
-
-1. Dependabotが依存関係の更新を検出
-2. Dependabotが自動的にPRを作成
-3. このワークフローがPRを自動承認
-4. 同時に自動マージ設定を有効化（`--auto`フラグ）
-5. 必須のステータスチェック（lintなど）が完了
-6. → GitHubが自動的にSquash and Mergeを実行
-7. → ブランチが自動削除される
-
-#### 必要な権限
-
-- `contents: write` - リポジトリへの書き込み
-- `pull-requests: write` - PRの操作
-
-#### 実装理由
-
-`GITHUB_TOKEN`を使った承認では`pull_request_review`イベントがトリガーされないため、承認とマージ設定を同一ワークフローで実行する必要があります。`pull_request_target`イベントを使用することで、Dependabotのメタデータを安全に検証できます。
-
-#### 注意事項
-
-- ブランチ保護ルールで要求されるステータスチェックがすべて成功するまで、マージは実行されません
-- セキュリティ上、`pull_request_target`イベントを使用しています
-- Dependabotメタデータの検証により、正当なDependabot PRのみが処理されます
-
-### 6. Auto Delete Branch on Merge (`auto-delete-branch.yml`)
+### 5. Auto Delete Branch on Merge (`auto-delete-branch.yml`)
 
 #### 概要
 
@@ -231,7 +163,7 @@ PRがマージされた後、ソースブランチを自動的に削除するワ
 - フォークからのPRの場合、元のリポジトリのブランチは削除されません
 - `auto-merge.yml`で自動マージされた場合、このワークフローは実行されますが、ブランチは既に削除されているため、無害なエラーが表示されます
 
-### 7. Update Other PRs After Merge (`update-other-prs.yml`)
+### 6. Update Other PRs After Merge (`update-other-prs.yml`)
 
 #### 概要
 
@@ -270,7 +202,7 @@ PRがmainブランチにマージされたときに、同じベースブラン�
 - エラーが発生しても処理は継続します（他のPRの更新を妨げない）
 - mainブランチへのPRマージ時のみ動作します
 
-### 8. Secrets疎通テスト (`test-secrets.yml`)
+### 7. Secrets疎通テスト (`test-secrets.yml`)
 
 #### 概要
 
@@ -319,48 +251,6 @@ Discord BotとGemini APIの認証情報（Secrets）の疎通を確認するワ�
 - GEMINI_API_KEYが設定されていない場合、テストはスキップされます
 - 詳細情報表示オプションを有効にすると、Bot名やサーバー名がGitHub Actions Step Summaryに表示されます（リポジトリのActions権限を持つユーザーが閲覧可能）
 - Gemini APIのテストでは最小限のトークン数でAPIリクエストを送信します（無料枠への影響を最小化）
-
-### 9. Lint (`lint.yml`)
-
-#### 概要
-
-Pythonコードの品質チェックを行うワークフローです。コードフォーマット、スタイル、未使用変数などを自動的に検証します。
-
-#### トリガー条件
-
-- **Pull Request**: 以下のファイルが変更された場合
-  - `**.py` - すべてのPythonファイル
-  - `.github/workflows/lint.yml` - このワークフロー自体
-  - `requirements.txt` - 依存関係ファイル
-  - `pyproject.toml` - プロジェクト設定
-  - `setup.cfg` - セットアップ設定
-  - `.pre-commit-config.yaml` - pre-commit設定
-
-- **Push to main**: 上記のファイルが変更された場合
-
-#### 動作
-
-1. Python 3.11をセットアップ
-2. リンターをインストール（flake8, pylint, autoflake, isort, black）
-3. 以下のチェックを実行：
-   - **autoflake**: 未使用のimportと変数をチェック
-   - **isort**: import文のソート順をチェック（blackプロファイル使用）
-   - **black**: コードフォーマットをチェック
-   - **flake8**: コードスタイルと構文エラーをチェック
-
-#### 注意事項
-
-- すべてのチェックは検証のみで、自動修正は行いません
-- ローカルで修正する場合は、以下のコマンドを使用：
-  ```bash
-  # 全リンターを自動修正
-  make format
-  
-  # またはpre-commitを使用
-  pre-commit run --all-files
-  ```
-- pre-commitフックをインストールすると、コミット時に自動チェックされます
-- ブランチ保護ルールの必須チェックに設定されている場合があります
 
 ## トラブルシューティング
 
