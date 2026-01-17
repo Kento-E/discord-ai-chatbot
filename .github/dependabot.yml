@@ -9,7 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "saturday"
+      day: "sunday"
       time: "09:00"
       timezone: "Asia/Tokyo"
     labels:
@@ -21,14 +21,13 @@ updates:
     open-pull-requests-limit: 10
     reviewers:
       - "Kento-E"
-    rebase-strategy: "auto"
 
   # GitHub Actionsの更新
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "saturday"
+      day: "sunday"
       time: "09:00"
       timezone: "Asia/Tokyo"
     labels:
@@ -40,4 +39,3 @@ updates:
     open-pull-requests-limit: 5
     reviewers:
       - "Kento-E"
-    rebase-strategy: "auto"
