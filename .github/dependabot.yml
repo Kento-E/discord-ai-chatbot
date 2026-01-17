@@ -21,7 +21,6 @@ updates:
     open-pull-requests-limit: 10
     reviewers:
       - "Kento-E"
-    rebase-strategy: "auto"
 
   # GitHub Actionsの更新
   - package-ecosystem: "github-actions"
@@ -40,4 +39,3 @@ updates:
     open-pull-requests-limit: 5
     reviewers:
       - "Kento-E"
-    rebase-strategy: "auto"
