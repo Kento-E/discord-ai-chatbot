@@ -68,7 +68,7 @@ jobs:
           ls -lh knowledge-data.enc
 
       - name: 暗号化データをアーティファクトとして保存
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: knowledge-data-encrypted
           path: knowledge-data.enc
