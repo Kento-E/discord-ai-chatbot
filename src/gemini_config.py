@@ -8,16 +8,7 @@ Gemini APIモデル設定を読み込むモジュール
 
 import os
 
-try:
-    import tomllib
-except ModuleNotFoundError:
-    try:
-        import tomli as tomllib  # type: ignore[no-redef]
-    except ModuleNotFoundError as exc:
-        raise ModuleNotFoundError(
-            "Python 3.11未満では tomli パッケージが必要です。\n"
-            "pip install tomli を実行してください。"
-        ) from exc
+from toml_loader import tomllib
 
 # デフォルトのモデル名（設定ファイルが読み込めない場合のフォールバック）
 DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
