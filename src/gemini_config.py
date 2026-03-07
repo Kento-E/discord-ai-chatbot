@@ -8,7 +8,7 @@ Gemini APIモデル設定を読み込むモジュール
 
 import os
 
-import yaml
+from toml_loader import tomllib
 
 # デフォルトのモデル名（設定ファイルが読み込めない場合のフォールバック）
 DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
@@ -17,7 +17,7 @@ DEFAULT_MODEL_NAME = "gemini-2.5-flash-lite"
 CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "config",
-    "gemini_model.yaml",
+    "gemini_model.toml",
 )
 
 # 遅延ロード用のキャッシュ
@@ -31,9 +31,9 @@ def get_model_name():
     初回呼び出し時に設定ファイルを読み込み、結果をキャッシュします。
     2回目以降の呼び出しではキャッシュされた値を返します。
 
-    設定ファイル（config/gemini_model.yaml）が存在し読み込める場合は
+    設定ファイル（config/gemini_model.toml）が存在し読み込める場合は
     そこからモデル名を取得します。ファイルが見つからない、または
-    YAML解析エラーが発生した場合は、デフォルト値（DEFAULT_MODEL_NAME）を返します。
+    TOML解析エラーが発生した場合は、デフォルト値（DEFAULT_MODEL_NAME）を返します。
 
     Returns:
         str: モデル名（例: "gemini-2.5-flash-lite"）
@@ -46,16 +46,16 @@ def get_model_name():
         return _cached_model_name
 
     try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            config = yaml.safe_load(f) or {}
+        with open(CONFIG_PATH, "rb") as f:
+            config = tomllib.load(f)
             _cached_model_name = config.get("model_name", DEFAULT_MODEL_NAME)
             return _cached_model_name
     except FileNotFoundError:
         # 設定ファイルが見つからない場合はデフォルト値を返す
         _cached_model_name = DEFAULT_MODEL_NAME
         return _cached_model_name
-    except (yaml.YAMLError, PermissionError) as e:
-        # YAML解析エラーまたは権限エラーの場合はデフォルト値を返す
+    except (tomllib.TOMLDecodeError, PermissionError) as e:
+        # TOML解析エラーまたは権限エラーの場合はデフォルト値を返す
         print(f"⚠️ 設定ファイルの読み込みに失敗: {e}")
         print(f"   デフォルトモデルを使用: {DEFAULT_MODEL_NAME}")
         _cached_model_name = DEFAULT_MODEL_NAME

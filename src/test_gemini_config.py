@@ -9,8 +9,6 @@ import os
 import sys
 import tempfile
 
-import yaml
-
 
 def test_normal_config_loading():
     """正常な設定ファイルの読み込みテスト"""
@@ -18,9 +16,9 @@ def test_normal_config_loading():
 
     # 一時的な設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump({"model_name": "gemini-2.0-flash"}, f)
+        f.write('model_name = "gemini-2.0-flash"\n')
         temp_config_path = f.name
 
     try:
@@ -54,7 +52,7 @@ def test_missing_config_file():
 
     # 存在しないパスを設定
     original_path = gemini_config.CONFIG_PATH
-    gemini_config.CONFIG_PATH = "/nonexistent/path/to/config.yaml"
+    gemini_config.CONFIG_PATH = "/nonexistent/path/to/config.toml"
     gemini_config._cached_model_name = None  # キャッシュをクリア
 
     try:
@@ -73,15 +71,15 @@ def test_missing_config_file():
         gemini_config._cached_model_name = None
 
 
-def test_invalid_yaml():
-    """無効なYAMLの場合のエラーハンドリングテスト"""
-    print("\n[テスト3] 無効なYAMLの場合のエラーハンドリング")
+def test_invalid_toml():
+    """無効なTOMLの場合のエラーハンドリングテスト"""
+    print("\n[テスト3] 無効なTOMLの場合のエラーハンドリング")
 
-    # 無効なYAMLファイルを作成
+    # 無効なTOMLファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        f.write("invalid: yaml: content: [")
+        f.write("invalid = toml = content = [")
         temp_config_path = f.name
 
     try:
@@ -97,7 +95,7 @@ def test_invalid_yaml():
             result == gemini_config.DEFAULT_MODEL_NAME
         ), f"期待値: '{gemini_config.DEFAULT_MODEL_NAME}', 実際: '{result}'"
         print(
-            f"  ✅ YAML解析エラー時にデフォルト値 '{gemini_config.DEFAULT_MODEL_NAME}' にフォールバックしました"
+            f"  ✅ TOML解析エラー時にデフォルト値 '{gemini_config.DEFAULT_MODEL_NAME}' にフォールバックしました"
         )
 
         # 設定を復元
@@ -108,13 +106,13 @@ def test_invalid_yaml():
         os.unlink(temp_config_path)
 
 
-def test_empty_yaml_file():
-    """空のYAMLファイルの処理テスト"""
-    print("\n[テスト4] 空のYAMLファイルの処理")
+def test_empty_toml_file():
+    """空のTOMLファイルの処理テスト"""
+    print("\n[テスト4] 空のTOMLファイルの処理")
 
-    # 空のYAMLファイルを作成
+    # 空のTOMLファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
         f.write("")
         temp_config_path = f.name
@@ -132,7 +130,7 @@ def test_empty_yaml_file():
             result == gemini_config.DEFAULT_MODEL_NAME
         ), f"期待値: '{gemini_config.DEFAULT_MODEL_NAME}', 実際: '{result}'"
         print(
-            f"  ✅ 空のYAMLファイルに対してデフォルト値 '{gemini_config.DEFAULT_MODEL_NAME}' を返しました"
+            f"  ✅ 空のTOMLファイルに対してデフォルト値 '{gemini_config.DEFAULT_MODEL_NAME}' を返しました"
         )
 
         # 設定を復元
@@ -149,9 +147,9 @@ def test_missing_model_name_key():
 
     # model_nameキーが存在しない設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump({"other_key": "some_value"}, f)
+        f.write('other_key = "some_value"\n')
         temp_config_path = f.name
 
     try:
@@ -184,9 +182,9 @@ def test_cache_behavior():
 
     # 一時的な設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump({"model_name": "gemini-test-model"}, f)
+        f.write('model_name = "gemini-test-model"\n')
         temp_config_path = f.name
 
     try:
@@ -258,7 +256,9 @@ def test_safety_settings():
         print(f"     設定されたカテゴリ数: {len(safety_settings)}")
 
     except ImportError:
-        print("  ⚠️  google-generativeai がインストールされていないため、スキップします")
+        print(
+            "  ⚠️  google-generativeai がインストールされていないため、スキップします"
+        )
 
 
 def test_create_generative_model():
@@ -287,7 +287,9 @@ def test_create_generative_model():
         print(f"     安全性設定のカテゴリ数: {len(safety_settings)}")
 
     except ImportError:
-        print("  ⚠️  google-generativeai がインストールされていないため、スキップします")
+        print(
+            "  ⚠️  google-generativeai がインストールされていないため、スキップします"
+        )
     except Exception as e:
         print(f"  ⚠️  テスト実行中にエラーが発生: {e}")
 
@@ -301,8 +303,8 @@ def main():
     tests = [
         test_normal_config_loading,
         test_missing_config_file,
-        test_invalid_yaml,
-        test_empty_yaml_file,
+        test_invalid_toml,
+        test_empty_toml_file,
         test_missing_model_name_key,
         test_cache_behavior,
         test_safety_settings,

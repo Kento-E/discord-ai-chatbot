@@ -2,4 +2,4 @@
 # 使用するGemini APIモデルを指定します
 
 # 現在使用しているモデル名
-model_name: "gemini-2.5-flash-lite"
+model_name = "gemini-2.5-flash-lite"

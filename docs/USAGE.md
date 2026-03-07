@@ -199,7 +199,7 @@ BotはLLM（Google Gemini API）を使用して、過去のメッセージを文
 - それらを文脈としてLLMに渡す
 - **サーバー固有の知識データを最優先**して応答を生成
 
-具体的な動作や応答の詳細については、[`config/prompts.yaml`](../config/prompts.yaml)で設定されています。
+具体的な動作や応答の詳細については、[`config/prompts.toml`](../config/prompts.toml)で設定されています。
 
 ## トラブルシューティング
 
