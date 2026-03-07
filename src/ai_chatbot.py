@@ -21,7 +21,7 @@ from gemini_config import create_generative_model
 from knowledge_db import KnowledgeDB
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "../data/knowledge.db")
-PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.yaml")
+PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.toml")
 
 # 遅延ロード用のグローバル変数（キャッシュ）
 _model = None
@@ -175,8 +175,8 @@ def _load_prompts():
         dict: プロンプト設定
 
     Raises:
-        FileNotFoundError: prompts.yamlが存在しない場合
-        RuntimeError: YAML構文エラーがある場合
+        FileNotFoundError: prompts.tomlが存在しない場合
+        RuntimeError: TOML構文エラーがある場合
     """
     global _prompts, _cached_additional_role
 
@@ -193,17 +193,26 @@ def _load_prompts():
         if not os.path.exists(prompts_path):
             raise FileNotFoundError(
                 f"プロンプト設定ファイルが見つかりません: {prompts_path}\n"
-                "config/prompts.yamlを配置してください。"
+                "config/prompts.tomlを配置してください。"
             )
 
-        import yaml
+        try:
+            import tomllib
+        except ModuleNotFoundError:
+            try:
+                import tomli as tomllib  # type: ignore[no-redef]
+            except ModuleNotFoundError as exc:
+                raise ModuleNotFoundError(
+                    "Python 3.11未満では tomli パッケージが必要です。"
+                    "pip install tomli を実行してください。"
+                ) from exc
 
         try:
-            with open(prompts_path, "r", encoding="utf-8") as f:
-                _prompts = yaml.safe_load(f)
-        except yaml.YAMLError as e:
+            with open(prompts_path, "rb") as f:
+                _prompts = tomllib.load(f)
+        except tomllib.TOMLDecodeError as e:
             raise RuntimeError(
-                f"プロンプト設定ファイル（{prompts_path}）のYAML構文に誤りがあります。\n"
+                f"プロンプト設定ファイル（{prompts_path}）のTOML構文に誤りがあります。\n"
                 f"エラー内容: {e}"
             ) from e
 

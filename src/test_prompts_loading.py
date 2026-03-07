@@ -9,8 +9,6 @@ import os
 import sys
 import tempfile
 
-import yaml
-
 
 def test_normal_prompts_loading():
     """正常なプロンプト設定ファイルの読み込みテスト"""
@@ -18,18 +16,14 @@ def test_normal_prompts_loading():
 
     # 一時的な設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump(
-            {
-                "llm_system_prompt": "テスト用システムプロンプト",
-                "llm_response_instruction": "テスト用応答指示",
-                "llm_context_header": "【テスト】",
-                "llm_query_header": "【質問】",
-                "llm_response_header": "【回答】",
-            },
-            f,
-            allow_unicode=True,
+        f.write(
+            'llm_system_prompt = "テスト用システムプロンプト"\n'
+            'llm_response_instruction = "テスト用応答指示"\n'
+            'llm_context_header = "【テスト】"\n'
+            'llm_query_header = "【質問】"\n'
+            'llm_response_header = "【回答】"\n'
         )
         temp_config_path = f.name
 
@@ -64,7 +58,7 @@ def test_missing_prompts_file():
 
     # 存在しないパスを設定
     original_path = ai_chatbot.PROMPTS_PATH
-    ai_chatbot.PROMPTS_PATH = "/nonexistent/path/to/prompts.yaml"
+    ai_chatbot.PROMPTS_PATH = "/nonexistent/path/to/prompts.toml"
     ai_chatbot._prompts = None  # キャッシュをクリア
 
     try:
@@ -87,15 +81,15 @@ def test_missing_prompts_file():
         ai_chatbot._prompts = None
 
 
-def test_invalid_yaml():
-    """無効なYAMLの場合のエラーハンドリングテスト"""
-    print("\n[テスト3] 無効なYAMLの場合のエラーハンドリング")
+def test_invalid_toml():
+    """無効なTOMLの場合のエラーハンドリングテスト"""
+    print("\n[テスト3] 無効なTOMLの場合のエラーハンドリング")
 
-    # 無効なYAMLファイルを作成
+    # 無効なTOMLファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        f.write("invalid: yaml: content: [")
+        f.write("invalid = toml = content = [")
         temp_config_path = f.name
 
     try:
@@ -110,8 +104,8 @@ def test_invalid_yaml():
             print("  ❌ エラーが発生しませんでした（異常）")
             return False
         except RuntimeError as e:
-            if "YAML構文に誤りがあります" in str(e):
-                print("  ✅ YAML解析エラー時にRuntimeErrorが発生しました")
+            if "TOML構文に誤りがあります" in str(e):
+                print("  ✅ TOML解析エラー時にRuntimeErrorが発生しました")
                 error_msg = str(e).split("\n")[0]
                 print(f"     エラーメッセージ: {error_msg}")
                 return True
@@ -127,13 +121,13 @@ def test_invalid_yaml():
         os.unlink(temp_config_path)
 
 
-def test_empty_yaml_file():
-    """空のYAMLファイルの処理テスト"""
-    print("\n[テスト4] 空のYAMLファイルの処理")
+def test_empty_toml_file():
+    """空のTOMLファイルの処理テスト"""
+    print("\n[テスト4] 空のTOMLファイルの処理")
 
-    # 空のYAMLファイルを作成
+    # 空のTOMLファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
         f.write("")
         temp_config_path = f.name
@@ -147,12 +141,12 @@ def test_empty_yaml_file():
 
         result = ai_chatbot._load_prompts()
 
-        # 空のYAMLファイルはNoneを返すので、それを受け入れる
-        if result is None:
-            print("  ✅ 空のYAMLファイルに対してNoneを返しました")
+        # 空のTOMLファイルは空の辞書を返す
+        if result == {}:
+            print("  ✅ 空のTOMLファイルに対して空の辞書を返しました")
             return True
         else:
-            print(f"  ⚠️  空のYAMLファイルに対して予期しない値を返しました: {result}")
+            print(f"  ⚠️  空のTOMLファイルに対して予期しない値を返しました: {result}")
             return True  # 警告だが失敗ではない
     finally:
         # 設定を復元
@@ -167,9 +161,9 @@ def test_missing_required_keys():
 
     # 必要なキーが存在しない設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump({"other_key": "some_value"}, f)
+        f.write('other_key = "some_value"\n')
         temp_config_path = f.name
 
     try:
@@ -203,11 +197,9 @@ def test_cache_behavior():
 
     # 一時的な設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump(
-            {"llm_system_prompt": "キャッシュテスト用プロンプト"}, f, allow_unicode=True
-        )
+        f.write('llm_system_prompt = "キャッシュテスト用プロンプト"\n')
         temp_config_path = f.name
 
     try:
@@ -247,15 +239,11 @@ def test_japanese_content():
 
     # 日本語を含む設定ファイルを作成
     with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+        mode="w", suffix=".toml", delete=False, encoding="utf-8"
     ) as f:
-        yaml.dump(
-            {
-                "llm_system_prompt": "あなたは過去のDiscordメッセージから学習した専門AIアシスタントです。",
-                "llm_response_instruction": "具体的で実践的なアドバイスを提供してください。",
-            },
-            f,
-            allow_unicode=True,
+        f.write(
+            'llm_system_prompt = "あなたは過去のDiscordメッセージから学習した専門AIアシスタントです。"\n'
+            'llm_response_instruction = "具体的で実践的なアドバイスを提供してください。"\n'
         )
         temp_config_path = f.name
 
@@ -290,8 +278,8 @@ def main():
     tests = [
         test_normal_prompts_loading,
         test_missing_prompts_file,
-        test_invalid_yaml,
-        test_empty_yaml_file,
+        test_invalid_toml,
+        test_empty_toml_file,
         test_missing_required_keys,
         test_cache_behavior,
         test_japanese_content,
@@ -303,7 +291,7 @@ def main():
     for test in tests:
         try:
             result = test()
-            # test_missing_prompts_file と test_invalid_yaml は戻り値を返す
+            # test_missing_prompts_file と test_invalid_toml は戻り値を返す
             if result is False:
                 failed += 1
             else:
