@@ -142,7 +142,7 @@ def test_empty_toml_file():
         result = ai_chatbot._load_prompts()
 
         # 空のTOMLファイルは空の辞書を返す
-        if result == {}:
+        if not result:
             print("  ✅ 空のTOMLファイルに対して空の辞書を返しました")
             return True
         else:

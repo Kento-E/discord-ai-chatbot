@@ -17,6 +17,17 @@ Bot起動時間が大幅に短縮されます。
 import os
 import threading
 
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ModuleNotFoundError as exc:
+        raise ModuleNotFoundError(
+            "Python 3.11未満では tomli パッケージが必要です。"
+            "pip install tomli を実行してください。"
+        ) from exc
+
 from gemini_config import create_generative_model
 from knowledge_db import KnowledgeDB
 
@@ -195,17 +206,6 @@ def _load_prompts():
                 f"プロンプト設定ファイルが見つかりません: {prompts_path}\n"
                 "config/prompts.tomlを配置してください。"
             )
-
-        try:
-            import tomllib
-        except ModuleNotFoundError:
-            try:
-                import tomli as tomllib  # type: ignore[no-redef]
-            except ModuleNotFoundError as exc:
-                raise ModuleNotFoundError(
-                    "Python 3.11未満では tomli パッケージが必要です。"
-                    "pip install tomli を実行してください。"
-                ) from exc
 
         try:
             with open(prompts_path, "rb") as f:
