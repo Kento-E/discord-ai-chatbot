@@ -17,10 +17,9 @@ Bot起動時間が大幅に短縮されます。
 import os
 import threading
 
-from toml_loader import tomllib
-
 from gemini_config import create_generative_model
 from knowledge_db import KnowledgeDB
+from toml_loader import tomllib
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "../data/knowledge.db")
 PROMPTS_PATH = os.path.join(os.path.dirname(__file__), "../config/prompts.toml")

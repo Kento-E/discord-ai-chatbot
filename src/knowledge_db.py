@@ -41,8 +41,7 @@ class KnowledgeDB:
             cursor = conn.cursor()
 
             # メッセージテーブル
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY,
                     channel_id INTEGER NOT NULL,
@@ -56,46 +55,35 @@ class KnowledgeDB:
                     importance INTEGER DEFAULT 0,
                     created_in_db TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """
-            )
+            """)
 
             # 埋め込みテーブル
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS embeddings (
                     message_id INTEGER PRIMARY KEY,
                     embedding_vector TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (message_id) REFERENCES messages(id)
                 )
-            """
-            )
+            """)
 
             # インデックス作成（検索性能向上）
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_messages_channel_id
                 ON messages(channel_id)
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_messages_timestamp
                 ON messages(timestamp)
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_messages_category
                 ON messages(category)
-            """
-            )
-            cursor.execute(
-                """
+            """)
+            cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_messages_importance
                 ON messages(importance)
-            """
-            )
+            """)
 
             conn.commit()
 
@@ -239,14 +227,12 @@ class KnowledgeDB:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT m.* FROM messages m
                 LEFT JOIN embeddings e ON m.id = e.message_id
                 WHERE e.message_id IS NULL
                 ORDER BY m.timestamp ASC
-                """
-            )
+                """)
             rows = cursor.fetchall()
 
             return [dict(row) for row in rows]
